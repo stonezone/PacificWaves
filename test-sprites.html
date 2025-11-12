@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sprite Loader Test</title>
+</head>
+<body>
+    <h1>Sprite Loader Test</h1>
+    <canvas id="testCanvas" width="800" height="600" style="border: 1px solid black;"></canvas>
+    <div id="status">Initializing...</div>
+    
+    <script type="module">
+        import { SpriteLoader } from './js/sprite-loader.js';
+        
+        console.log('Test script started');
+        const status = document.getElementById('status');
+        
+        try {
+            status.textContent = 'Loading sprites...';
+            await SpriteLoader.loadAll();
+            status.textContent = 'Sprites loaded! Drawing test...';
+            
+            const canvas = document.getElementById('testCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Draw ocean tile
+            SpriteLoader.drawTiled(ctx, 'ocean_tile', 0, 0, 800, 600, 64);
+            
+            // Draw Oahu island
+            SpriteLoader.draw(ctx, 'oahu_island', 300, 200, 128, 96);
+            
+            // Draw storm
+            SpriteLoader.draw(ctx, 'storm_strong', 100, 100, 64, 64);
+            
+            status.textContent = 'Success! Sprites rendering correctly.';
+        } catch (error) {
+            status.textContent = 'ERROR: ' + error.message;
+            console.error(error);
+        }
+    </script>
+</body>
+</html>

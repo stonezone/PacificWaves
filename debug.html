@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug - PacificWaves</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .error { color: red; background: #fee; padding: 10px; margin: 10px 0; }
+        .success { color: green; background: #efe; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>PacificWaves Debug</h1>
+    <div id="status">Testing...</div>
+
+    <script type="module">
+        const status = document.getElementById('status');
+
+        window.onerror = function(msg, url, line, col, error) {
+            status.innerHTML += `<div class="error">ERROR: ${msg}<br>Line: ${line}, Col: ${col}<br>${error?.stack || ''}</div>`;
+        };
+
+        try {
+            status.innerHTML = '<div class="success">Starting module import...</div>';
+
+            import { SpriteLoader } from './js/sprite-loader.js';
+            status.innerHTML += '<div class="success">✓ Sprite loader imported</div>';
+
+            // Try to read the main script
+            fetch('waves.html')
+                .then(r => r.text())
+                .then(html => {
+                    const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
+                    if (match) {
+                        const js = match[1];
+                        status.innerHTML += '<div class="success">✓ Found script section (' + js.length + ' chars)</div>';
+
+                        // Check for basic syntax
+                        try {
+                            new Function(js);
+                            status.innerHTML += '<div class="success">✓ Script parses without syntax errors</div>';
+                        } catch (e) {
+                            status.innerHTML += '<div class="error">✗ Syntax error in waves.html script:<br>' + e.message + '</div>';
+                        }
+                    }
+                })
+                .catch(e => {
+                    status.innerHTML += '<div class="error">Error reading waves.html: ' + e.message + '</div>';
+                });
+
+        } catch (error) {
+            status.innerHTML += '<div class="error">Import error: ' + error.message + '<br>' + error.stack + '</div>';
+        }
+    </script>
+</body>
+</html>

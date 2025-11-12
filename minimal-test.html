@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Import Test</title>
+</head>
+<body>
+    <h1>Testing ES6 Import</h1>
+    <div id="status">Starting...</div>
+
+    <script>
+        // This will catch ANY errors before module loads
+        window.addEventListener('error', function(e) {
+            document.getElementById('status').innerHTML +=
+                '<div style="color:red;">ERROR: ' + e.message +
+                '<br>File: ' + e.filename +
+                '<br>Line: ' + e.lineno + '</div>';
+        });
+    </script>
+
+    <script type="module">
+        document.getElementById('status').innerHTML = 'Module script started...<br>';
+
+        try {
+            document.getElementById('status').innerHTML += 'Importing SpriteLoader...<br>';
+
+            const { SpriteLoader } = await import('./js/sprite-loader.js');
+
+            document.getElementById('status').innerHTML += 'Import successful!<br>';
+            document.getElementById('status').innerHTML += 'SpriteLoader type: ' + typeof SpriteLoader + '<br>';
+
+            await SpriteLoader.loadAll();
+
+            document.getElementById('status').innerHTML += '<div style="color:green;">SUCCESS! All sprites loaded.</div>';
+
+        } catch (error) {
+            document.getElementById('status').innerHTML +=
+                '<div style="color:red;">IMPORT ERROR: ' + error.message +
+                '<br>Stack: ' + error.stack + '</div>';
+        }
+    </script>
+</body>
+</html>

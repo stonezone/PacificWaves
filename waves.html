@@ -963,6 +963,9 @@
     Critical bug fixes, performance optimizations, and accessibility improvements.
     -->
     <script type="module">
+        // Import sprite loader module
+        import { SpriteLoader } from './js/sprite-loader.js';
+
 
         // --- 1. PHYSICS CONSTANTS (Unchanged) ---
         const CONSTS = {
@@ -1020,11 +1023,9 @@
 
             next() {
                 // SplitMix64
-                this.seed = (this.seed + 0x9e3779b97f4a7c15n) >>> 0;
-                let z = this.seed;
-                z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9n >>> 0;
-                z = (z ^ (z >> 27)) * 0x94d049bb133111ebn >>> 0;
-                return Number(z ^ (z >> 31));
+                // Simple LCG (Linear Congruential Generator)
+                this.seed = (this.seed * 1664525 + 1013904223) >>> 0;
+                return this.seed;
             }
             
             random() { return (this.next() >>> 0) / 4294967296; }
@@ -1705,10 +1706,10 @@
                 
                 let canvasW, canvasH;
                 if (w / h > gridAspect) {
-                    canvasH = Math.max(200, h - 20);
+                    canvasH = Math.max(600, h - 20);
                     canvasW = canvasH * gridAspect;
                 } else {
-                    canvasW = Math.max(250, w - 20);
+                    canvasW = Math.max(800, w - 20);
                     canvasH = canvasW / gridAspect;
                 }
                 
@@ -1766,43 +1767,77 @@
                 const cellW = w / gridWidth;
                 const cellH = h / gridHeight;
                 
-                // Nearshore gradient
-                const { j: oahuJ } = Utils.latLonToCell(
-                    CONSTS.HAWAII_MAIN_ISLAND_CENTER.lat, 
-                    CONSTS.HAWAII_MAIN_ISLAND_CENTER.lon
-                );
-                const nearshoreStartY = (Math.round(oahuJ) - CONSTS.NEARSHORE_CELLS) * cellH;
-                const nearshoreEndY = (Math.round(oahuJ) + 5) * cellH;
+                // Ocean background - clean light blue (matching reference map)
+                ctx.fillStyle = '#e8f4fc'; // Very light blue ocean
+                ctx.fillRect(0, 0, w, h);
+                
                 
-                const gradient = ctx.createLinearGradient(0, nearshoreStartY, 0, nearshoreEndY);
-                gradient.addColorStop(0, '#0a0f14');
-                gradient.addColorStop(0.5, '#4a90e2');
-                gradient.addColorStop(1, '#4a90e2');
-                
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, nearshoreStartY, w, nearshoreEndY - nearshoreStartY);
-                
-                // Land polygons
-                ctx.fillStyle = '#c2b280';
-                ctx.strokeStyle = '#a1926c';
-                ctx.lineWidth = 1;
-                
-                for (const landName in CONSTS.LAND_POLYGONS) {
-                    const poly = CONSTS.LAND_POLYGONS[landName];
-                    ctx.beginPath();
-                    poly.forEach((p, idx) => {
-                        const [lat, lon] = p;
-                        const { i, j } = Utils.latLonToCell(lat, lon);
-                        const x = i * cellW;
-                        const y = j * cellH;
-                        if (idx === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    });
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                
+                // Land rendering - border landmasses and Hawaiian islands
+                if (window.sprites && window.sprites.loaded) {
+                    // Render border landmasses (Japan, Alaska, Kamchatka, N.America) with polygons
+                    ctx.fillStyle = '#f5f0e8';
+                    ctx.strokeStyle = '#2c3e50';
+                    ctx.lineWidth = 2;
+
+                    for (const landName in CONSTS.LAND_POLYGONS) {
+                        if (landName === 'hawaii') continue; // Skip Hawaii, render with sprites
+
+                        const poly = CONSTS.LAND_POLYGONS[landName];
+                        ctx.beginPath();
+                        poly.forEach((p, idx) => {
+                            const [lat, lon] = p;
+                            const { i, j } = Utils.latLonToCell(lat, lon);
+                            const x = i * cellW;
+                            const y = j * cellH;
+                            if (idx === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        });
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+
+                    // Render Oahu (centered on Hawaii coordinates)
+                    const oahuCenter = CONSTS.HAWAII_MAIN_ISLAND_CENTER;
+                    const { i: oahuI, j: oahuJ } = Utils.latLonToCell(oahuCenter.lat, oahuCenter.lon);
+                    const oahuSpriteW = 128;
+                    const oahuSpriteH = 96;
+                    const oahuX = oahuI * cellW - oahuSpriteW / 2;
+                    const oahuY = oahuJ * cellH - oahuSpriteH / 2;
+                    window.sprites.draw(ctx, 'oahu_island', oahuX, oahuY, oahuSpriteW, oahuSpriteH);
+
+                    // Render Kauai (northwest of Oahu)
+                    const kauaiLat = 22.0;
+                    const kauaiLon = 200.5;
+                    const { i: kauaiI, j: kauaiJ } = Utils.latLonToCell(kauaiLat, kauaiLon);
+                    const kauaiSpriteW = 32;
+                    const kauaiSpriteH = 24;
+                    const kauaiX = kauaiI * cellW - kauaiSpriteW / 2;
+                    const kauaiY = kauaiJ * cellH - kauaiSpriteH / 2;
+                    window.sprites.draw(ctx, 'kauai_island', kauaiX, kauaiY, kauaiSpriteW, kauaiSpriteH);
+                } else {
+                    // Fallback to polygon rendering if sprites not loaded
+                    ctx.fillStyle = '#f5f0e8';
+                    ctx.strokeStyle = '#2c3e50';
+                    ctx.lineWidth = 2;
+
+                    for (const landName in CONSTS.LAND_POLYGONS) {
+                        const poly = CONSTS.LAND_POLYGONS[landName];
+                        ctx.beginPath();
+                        poly.forEach((p, idx) => {
+                            const [lat, lon] = p;
+                            const { i, j } = Utils.latLonToCell(lat, lon);
+                            const x = i * cellW;
+                            const y = j * cellH;
+                            if (idx === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        });
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                }
+                
                 // Grid lines
                 ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
                 ctx.lineWidth = 1;
@@ -1820,36 +1855,69 @@
                 ctx.stroke();
             },
             
-            drawSwell(ctx, w, h) {
-                const { gridWidth, gridHeight, grid, staticGrid } = state;
-                const cellW = w / gridWidth;
-                const cellH = h / gridHeight;
-                const arrowSpacing = 12;
-                
-                for (let j = 0; j < gridHeight; j += arrowSpacing) {
-                    for (let i = 0; i < gridWidth; i += arrowSpacing) {
-                        const idx = j * gridWidth + i;
-                        if (staticGrid.isLand[idx] === 1) continue;
-                        
-                        const hs = grid.hs[idx];
-                        if (hs < 0.5) continue;
-                        
-                        const x = (i + arrowSpacing/2) * cellW;
-                        const y = (j + arrowSpacing/2) * cellH;
-                        
-                        // Color by height
-                        const hs_norm = Math.min(hs / 8.0, 1.0);
-                        const r = Math.round(Utils.lerp(0, 255, hs_norm));
-                        const g = Math.round(Utils.lerp(200, 100, hs_norm));
-                        const b = Math.round(Utils.lerp(255, 0, hs_norm));
-                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.8)`;
-                        
-                        const theta = grid.theta[idx];
-                        const len = Math.min(hs * 2, arrowSpacing * cellW * 0.8);
-                        this.drawArrow(ctx, x, y, theta, len);
-                    }
-                }
-            },
+            drawSwell(ctx, w, h) {
+                const { gridWidth, gridHeight, grid, staticGrid } = state;
+                const cellW = w / gridWidth;
+                const cellH = h / gridHeight;
+                const arrowSpacing = 12;
+
+                if (window.sprites && window.sprites.loaded) {
+                    // Render wave ripples with sprites (animated)
+                    const rippleSpacing = 16; // Sparser than arrows for performance
+                    const animTime = (Date.now() / 1000) % 10; // 10-second loop
+
+                    for (let j = 0; j < gridHeight; j += rippleSpacing) {
+                        for (let i = 0; i < gridWidth; i += rippleSpacing) {
+                            const idx = j * gridWidth + i;
+                            if (staticGrid.isLand[idx] === 1) continue;
+
+                            const hs = grid.hs[idx];
+                            if (hs < 0.5) continue;
+
+                            const x = (i + rippleSpacing/2) * cellW;
+                            const y = (j + rippleSpacing/2) * cellH;
+
+                            // Animate: scale and alpha based on wave height and time
+                            const hs_norm = Math.min(hs / 8.0, 1.0);
+                            const rippleSize = 24 + hs_norm * 32; // 24-56px
+                            
+                            // Pulsing alpha animation
+                            const pulsePhase = (animTime * 2 + i * 0.1 + j * 0.1) % 1.0;
+                            const alpha = 0.3 + 0.4 * Math.sin(pulsePhase * Math.PI * 2);
+
+                            // Draw ripple sprite
+                            const rippleX = x - rippleSize / 2;
+                            const rippleY = y - rippleSize / 2;
+                            window.sprites.draw(ctx, 'wave_ripple', rippleX, rippleY, rippleSize, rippleSize, alpha);
+                        }
+                    }
+                } else {
+                    // Fallback to arrows if sprites not loaded
+                    for (let j = 0; j < gridHeight; j += arrowSpacing) {
+                        for (let i = 0; i < gridWidth; i += arrowSpacing) {
+                            const idx = j * gridWidth + i;
+                            if (staticGrid.isLand[idx] === 1) continue;
+
+                            const hs = grid.hs[idx];
+                            if (hs < 0.5) continue;
+
+                            const x = (i + arrowSpacing/2) * cellW;
+                            const y = (j + arrowSpacing/2) * cellH;
+
+                            // Color by height
+                            const hs_norm = Math.min(hs / 8.0, 1.0);
+                            const r = Math.round(Utils.lerp(0, 255, hs_norm));
+                            const g = Math.round(Utils.lerp(200, 100, hs_norm));
+                            const b = Math.round(Utils.lerp(255, 0, hs_norm));
+                            ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.8)`;
+
+                            const theta = grid.theta[idx];
+                            const len = Math.min(hs * 2, arrowSpacing * cellW * 0.8);
+                            this.drawArrow(ctx, x, y, theta, len);
+                        }
+                    }
+                }
+            },
             
             drawWind(ctx, w, h) {
                 const { gridWidth, gridHeight, grid, staticGrid } = state;
@@ -1919,20 +1987,49 @@
                         ctx.stroke();
                     }
                     
-                    // Center
-                    ctx.fillStyle = isSelected ? '#ef4444' : '#f3f4f6';
-                    ctx.beginPath();
-                    ctx.arc(x, y, isSelected ? 6 : 5, 0, 2 * CONSTS.PI);
-                    ctx.fill();
-                    
-                    // Crosshair
-                    ctx.strokeStyle = '#111827';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(x - 8, y); ctx.lineTo(x + 8, y);
-                    ctx.moveTo(x, y - 8); ctx.lineTo(x, y + 8);
-                    ctx.stroke();
-                    
+                    // Storm center with sprite
+                    if (window.sprites && window.sprites.loaded) {
+                        // Determine storm intensity based on radius (rough approximation)
+                        let spriteName, spriteSize;
+                        if (storm.radius < 100) {
+                            spriteName = 'storm_weak';
+                            spriteSize = 32;
+                        } else if (storm.radius < 200) {
+                            spriteName = 'storm_moderate';
+                            spriteSize = 48;
+                        } else {
+                            spriteName = 'storm_strong';
+                            spriteSize = 64;
+                        }
+
+                        // Draw sprite centered on storm position
+                        const spriteX = x - spriteSize / 2;
+                        const spriteY = y - spriteSize / 2;
+                        window.sprites.draw(ctx, spriteName, spriteX, spriteY, spriteSize, spriteSize);
+
+                        // Add selection highlight if selected
+                        if (isSelected) {
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.arc(x, y, spriteSize / 2 + 4, 0, 2 * CONSTS.PI);
+                            ctx.stroke();
+                        }
+                    } else {
+                        // Fallback to circle + crosshair if sprites not loaded
+                        ctx.fillStyle = isSelected ? '#ef4444' : '#f3f4f6';
+                        ctx.beginPath();
+                        ctx.arc(x, y, isSelected ? 6 : 5, 0, 2 * CONSTS.PI);
+                        ctx.fill();
+
+                        ctx.strokeStyle = '#111827';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(x - 8, y); ctx.lineTo(x + 8, y);
+                        ctx.moveTo(x, y - 8); ctx.lineTo(x, y + 8);
+                        ctx.stroke();
+                    }
+                    
                     // Label
                     if (isSelected) {
                         ctx.fillStyle = 'white';
@@ -1953,23 +2050,40 @@
                     const x = site.x * cellW;
                     const y = site.y * cellH;
                     
-                    // Diamond marker
-                    ctx.fillStyle = 'rgba(234, 179, 8, 0.9)';
-                    ctx.beginPath();
-                    ctx.moveTo(x, y - 8);
-                    ctx.lineTo(x + 7, y);
-                    ctx.lineTo(x, y + 8);
-                    ctx.lineTo(x - 7, y);
-                    ctx.closePath();
-                    ctx.fill();
-                    
-                    // Label
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(site.name.slice(-1), x, y + 3); // Show A, B, or C
-                });
+                    // Surf spot marker with sprite
+                    if (window.sprites && window.sprites.loaded) {
+                        const markerSize = 24; // Display size
+                        const markerX = x - markerSize / 2;
+                        const markerY = y - markerSize; // Offset up so flag appears above point
+                        window.sprites.draw(ctx, 'surf_spot_marker', markerX, markerY, markerSize, markerSize);
+
+                        // Label below marker
+                        ctx.fillStyle = 'white';
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 3;
+                        ctx.font = 'bold 14px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.strokeText(site.name.slice(-1), x, y + 16);
+                        ctx.fillText(site.name.slice(-1), x, y + 16);
+                    } else {
+                        // Fallback to diamond if sprites not loaded
+                        ctx.fillStyle = 'rgba(234, 179, 8, 0.9)';
+                        ctx.beginPath();
+                        ctx.moveTo(x, y - 8);
+                        ctx.lineTo(x + 7, y);
+                        ctx.lineTo(x, y + 8);
+                        ctx.lineTo(x - 7, y);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(site.name.slice(-1), x, y + 3);
+                    }
                 
+                });
+                
                 // Measurement tool
                 const { active, p1, p2 } = ui.measurementTool;
                 if (active && p1) {
@@ -2525,7 +2639,7 @@ handlePhysicsReset() {
                     const sy = j * cellH;
                     const dist_sq = (x - sx)**2 + (y - sy)**2;
                     return dist_sq < (CLICK_RADIUS_PX * CLICK_RADIUS_PX);
-          _       });
+            });
             },
             
             showModal(id) {
@@ -2590,7 +2704,7 @@ handlePhysicsReset() {
                 const i_norm = i / state.gridWidth;
                 const j_norm = j / state.gridHeight;
                 const lon = Utils.lerp(CONSTS.MAP_LON_EAST_EDGE, CONSTS.MAP_LON_WEST_EDGE, i_norm);
-        _         const lat = Utils.lerp(CONSTS.MAP_LAT_MIN, CONSTS.MAP_LAT_MAX, j_norm);
+                const lat = Utils.lerp(CONSTS.MAP_LAT_MIN, CONSTS.MAP_LAT_MAX, j_norm);
                 return { lat, lon };
             },
             
@@ -2699,7 +2813,7 @@ handlePhysicsReset() {
                 const allPass = results.every(r => r.pass);
                 output += `\nOverall: ${allPass ? '<span class="pass">All checks passed!</span>' : '<span class="fail">One or more checks failed.</span>'}`;
                 outEl.innerHTML = output;
-    _       },
+            },
             
             test(name, fn) {
                 try {
@@ -2779,7 +2893,7 @@ handlePhysicsReset() {
 
         // --- 10. APP INITIALIZATION ---
         const App = {
-            init() {
+            async init() {
                 try {
                     const canvas = document.getElementById('simCanvas');
                     if (!canvas) throw new Error('Canvas element #simCanvas not found');
@@ -2788,19 +2902,31 @@ handlePhysicsReset() {
                     const initialSeed = document.getElementById('seedInput').value || 'oahu-swell-init';
                     Sim.init(initialSeed);
                     
-                    // 2. Init Renderer
-                    Render.init(canvas);
+                    // 2. Load Sprites FIRST (before rendering)
+                    console.log('🌊 Loading sprites...');
+                    try {
+                        await SpriteLoader.loadAll();
+                        // Make sprites available globally to Render module
+                        window.sprites = SpriteLoader;
+                        console.log('u2713 All sprites loaded and ready');
+                    } catch (spriteError) {
+                        console.warn('u26a0ufe0f Sprites failed to load, continuing with basic rendering', spriteError);
+                    }
+
+                    // 3. Init Renderer (after sprites are loaded)
+                    Render.init(canvas);
+
                     
-                    // 3. Init UI
+                    // 4. Init UI
                     UI.init();
                     
-                    // 4. Run tests
+                    // 5. Run tests
                     Tests.runSelfChecks();
                     
-                    // 5. Start Loop
+                    // 6. Start Loop
                     window.requestAnimationFrame(MainLoop.run.bind(MainLoop));
                     
-  t                 console.log("North Shore Swell Lab initialized.");
+                    console.log("✓ North Shore Swell Lab initialized.");
                 } catch (error) {
                     console.error("Fatal initialization error:", error);
                     document.body.innerHTML = `<div style="color:red; padding:20px;">
