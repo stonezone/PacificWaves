@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Interactive North Pacific swell simulation for O'ahu's North Shore">
     <title>North Shore Swell Lab</title>
+    <link rel="stylesheet" href="css/ui-enhancements.css">
     
     <style>
         /* === ENHANCED STYLES WITH ACCESSIBILITY IMPROVEMENTS === */
@@ -698,6 +699,81 @@
             
             <div class="sim-canvas-container" id="canvasContainer">
                 <canvas id="simCanvas" role="img" aria-label="North Pacific swell simulation canvas"></canvas>
+                
+                <!-- Status Bar -->
+                <div class="status-bar" id="statusBar">
+                    <div class="status-indicator"></div>
+                    <div class="status-item">
+                        <span>Storms:</span>
+                        <span class="status-item-value" id="statusStormCount">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Time:</span>
+                        <span class="status-item-value" id="statusTime">T+ 0.0h</span>
+                    </div>
+                    <div class="status-item">
+                        <span>FPS:</span>
+                        <span class="status-item-value" id="statusFPS">60</span>
+                    </div>
+                </div>
+                
+                <!-- Map Controls -->
+                <div class="map-controls" id="mapControls">
+                    <button class="map-control-btn" id="zoomInBtn" title="Zoom In" aria-label="Zoom in">+</button>
+                    <button class="map-control-btn" id="zoomOutBtn" title="Zoom Out" aria-label="Zoom out">−</button>
+                    <button class="map-control-btn" id="resetViewBtn" title="Reset View" aria-label="Reset view">⟲</button>
+                </div>
+                
+                <!-- Map Legend -->
+                <div class="map-legend" id="mapLegend">
+                    <h4>Legend</h4>
+                    <div class="legend-item">
+                        <div class="legend-icon storm-weak"></div>
+                        <span>Weak Storm (<100nm)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon storm-moderate"></div>
+                        <span>Moderate (100-200nm)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon storm-strong"></div>
+                        <span>Strong Storm (>200nm)</span>
+                    </div>
+                    <div class="legend-divider"></div>
+                    <div class="legend-item">
+                        <div class="legend-icon wave-low"></div>
+                        <span>Waves: 0-2m</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon wave-medium"></div>
+                        <span>Waves: 2-5m</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-icon wave-high"></div>
+                        <span>Waves: 5m+</span>
+                    </div>
+                </div>
+                
+                <!-- Storm Info Tooltip -->
+                <div class="storm-info-tooltip" id="stormInfoTooltip">
+                    <div class="storm-info-name" id="tooltipStormName">Storm Name</div>
+                    <div class="storm-info-row">
+                        <span>Position:</span>
+                        <span class="storm-info-value" id="tooltipPosition">--</span>
+                    </div>
+                    <div class="storm-info-row">
+                        <span>Wind:</span>
+                        <span class="storm-info-value" id="tooltipWind">--</span>
+                    </div>
+                    <div class="storm-info-row">
+                        <span>Heading:</span>
+                        <span class="storm-info-value" id="tooltipHeading">--</span>
+                    </div>
+                    <div class="storm-info-row">
+                        <span>Speed:</span>
+                        <span class="storm-info-value" id="tooltipSpeed">--</span>
+                    </div>
+                </div>
             </div>
 
             <div class="control-bar" role="toolbar" aria-label="Simulation controls">
@@ -836,6 +912,11 @@
                         <tbody id="siteCurrentTableBody">
                         </tbody>
                     </table>
+                    
+                    <h4>24-Hour Forecast</h4>
+                    <div class="forecast-chart">
+                        <canvas id="forecastChartCanvas" class="chart-canvas"></canvas>
+                    </div>
                 </section>
 
                 <!-- Environment Tab -->
@@ -2941,5 +3022,6 @@ handlePhysicsReset() {
         
     </script>
 
+    <script src="js/ui-enhancements.js"></script>
 </body>
 </html>
