@@ -1,0 +1,26 @@
+{
+  "name": "pacific-waves",
+  "version": "1.0.0",
+  "description": "Interactive North Pacific swell simulation for O'ahu's North Shore",
+  "main": "waves.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "version": "echo 'Updating version...' && git add CHANGELOG.md",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stonezone/PacificWaves.git"
+  },
+  "keywords": [
+    "surf",
+    "swell",
+    "simulation",
+    "oceanography",
+    "hawaii",
+    "education"
+  ],
+  "author": "stonezone",
+  "license": "MIT",
+  "type": "module"
+}
