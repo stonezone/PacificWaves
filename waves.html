@@ -972,11 +972,18 @@
         import { SpriteLoader } from './js/sprite-loader.js';
         import { CONSTS } from './src/core/constants.js';
         import { PRNG } from './src/core/prng.js';
+        import { StateManager } from './src/core/state-manager.js';
 
 
 
-        // --- 3. GLOBAL STATE ---
-        let state = { initialized: false };
+
+        // --- 3. GLOBAL STATE (Managed) ---
+        // Create StateManager instance
+        const stateManager = new StateManager({ initialized: false });
+
+        // Expose state for backward compatibility during migration
+        // Direct mutations still work but are managed through StateManager
+        let state = stateManager.getState();
 
         // --- 4. SIMULATION CORE (Critical Bug Fixes & Optimizations) ---
         const Sim = {
