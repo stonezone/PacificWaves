@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sites Tab - Enhanced UI Example</title>
+
+    <link rel="stylesheet" href="css/improved-layout.css">
+
+    <style>
+        :root {
+            --bg-deep: #0a0f14;
+            --bg-main: #111827;
+            --bg-panel: #1f2937;
+            --bg-header: #374151;
+            --bg-control: #4b5563;
+            --text-light: #f3f4f6;
+            --text-dim: #9ca3af;
+            --text-heading: #e5e7eb;
+            --border-color: #4b5563;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --font-family: system-ui, -apple-system, sans-serif;
+            --font-family-mono: 'SF Mono', Consolas, monospace;
+            --transition-fast: 0.15s ease-out;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-panel);
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 24px;
+        }
+
+        .demo-container {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="demo-container">
+
+        <!-- Section Header -->
+        <div class="section-header">
+            <h3>Site Monitor</h3>
+            <span class="badge">Live</span>
+        </div>
+
+        <!-- Real-time Measurements -->
+        <div class="section-subheader">
+            Current Conditions
+        </div>
+
+        <!-- Oahu North Shore -->
+        <div class="site-measurement">
+            <div class="site-header">
+                <span class="site-name">Oahu North Shore</span>
+                <span class="site-trend rising">↗</span>
+            </div>
+
+            <div class="site-metrics">
+                <div class="metric">
+                    <div class="metric-value">4.2m</div>
+                    <div class="metric-label">Height</div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-value">14s</div>
+                    <div class="metric-label">Period</div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-value">315°</div>
+                    <div class="metric-label">Direction</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 70%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-top: 4px;">
+                    <span>0m</span>
+                    <span>Peak: 6.8m @ T+36h</span>
+                    <span>8m</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kauai North -->
+        <div class="site-measurement">
+            <div class="site-header">
+                <span class="site-name">Kauai North</span>
+                <span class="site-trend rising">↗</span>
+            </div>
+
+            <div class="site-metrics">
+                <div class="metric">
+                    <div class="metric-value">3.8m</div>
+                    <div class="metric-label">Height</div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-value">13s</div>
+                    <div class="metric-label">Period</div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-value">320°</div>
+                    <div class="metric-label">Direction</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-top: 4px;">
+                    <span>0m</span>
+                    <span>Peak: 6.2m @ T+38h</span>
+                    <span>8m</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maui North -->
+        <div class="site-measurement">
+            <div class="site-header">
+                <span class="site-name">Maui North</span>
+                <span class="site-trend">→</span>
+            </div>
+
+            <div class="site-metrics">
+                <div class="metric">
+                    <div class="metric-value">2.5m</div>
+                    <div class="metric-label">Height</div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-value">11s</div>
+                    <div class="metric-label">Period</div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-value">340°</div>
+                    <div class="metric-label">Direction</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 40%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-yellow));"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-top: 4px;">
+                    <span>0m</span>
+                    <span>Peak: 4.8m @ T+42h</span>
+                    <span>8m</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Peak Events Table -->
+        <div class="section-subheader" style="margin-top: 32px;">
+            Peak Forecast (Next 48h)
+        </div>
+
+        <table class="table-enhanced">
+            <thead>
+                <tr>
+                    <th>Site</th>
+                    <th>Hs</th>
+                    <th>Tp</th>
+                    <th>Dir</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Oahu N</td>
+                    <td class="peak-value">6.8m</td>
+                    <td>16s</td>
+                    <td>315°</td>
+                    <td>T+36h</td>
+                </tr>
+                <tr>
+                    <td>Kauai N</td>
+                    <td class="peak-value">6.2m</td>
+                    <td>15s</td>
+                    <td>320°</td>
+                    <td>T+38h</td>
+                </tr>
+                <tr>
+                    <td>Maui N</td>
+                    <td class="peak-value">4.8m</td>
+                    <td>14s</td>
+                    <td>340°</td>
+                    <td>T+42h</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Breaking Wave Conditions -->
+        <div class="section-subheader">
+            Nearshore Breaking
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="info-card-title">Pipeline (Ehukai Beach)</div>
+                <div class="info-card-badge">Reef Break</div>
+            </div>
+
+            <div class="info-card-body">
+                <div class="info-row">
+                    <span class="info-label">Face Height</span>
+                    <span class="info-value" style="color: var(--accent-yellow); font-size: 16px;">12-15 ft</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Swell Period</span>
+                    <span class="info-value">14s</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Swell Direction</span>
+                    <span class="info-value">315° NW</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Break Quality</span>
+                    <span class="info-value" style="color: var(--status-active);">Excellent</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                    <span class="indicator-dot active"></span>
+                    <span style="color: var(--text-dim);">Optimal conditions for surfing</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="info-card-title">Sunset Beach</div>
+                <div class="info-card-badge">Point Break</div>
+            </div>
+
+            <div class="info-card-body">
+                <div class="info-row">
+                    <span class="info-label">Face Height</span>
+                    <span class="info-value" style="color: var(--accent-yellow); font-size: 16px;">10-12 ft</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Swell Period</span>
+                    <span class="info-value">14s</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Swell Direction</span>
+                    <span class="info-value">315° NW</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Break Quality</span>
+                    <span class="info-value" style="color: var(--status-active);">Very Good</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                    <span class="indicator-dot active"></span>
+                    <span style="color: var(--text-dim);">Good conditions for surfing</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="info-card-title">Waimea Bay</div>
+                <div class="info-card-badge">Beach Break</div>
+            </div>
+
+            <div class="info-card-body">
+                <div class="info-row">
+                    <span class="info-label">Face Height</span>
+                    <span class="info-value" style="color: var(--accent-red); font-size: 16px;">18-22 ft</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Swell Period</span>
+                    <span class="info-value">16s</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Swell Direction</span>
+                    <span class="info-value">320° NW</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Break Quality</span>
+                    <span class="info-value" style="color: var(--accent-red);">Dangerous</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                    <span class="indicator-dot danger"></span>
+                    <span style="color: var(--accent-red);">Experts only - hazardous conditions</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
