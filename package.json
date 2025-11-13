@@ -5,6 +5,8 @@
   "main": "waves.html",
   "scripts": {
     "start": "python3 -m http.server 8000",
+    "serve-python": "python3 -m http.server 8000",
+    "serve-node": "node server.cjs",
     "version": "echo 'Updating version...' && git add CHANGELOG.md",
     "postversion": "git push && git push --tags"
   },
