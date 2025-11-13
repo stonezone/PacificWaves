@@ -1,0 +1,461 @@
+/**
+ * Professional Forecast Theme for PacificWaves
+ * Clean, data-focused design inspired by marine forecast interfaces
+ */
+
+/* Override base styles with forecast aesthetic */
+:root {
+    /* Professional forecast colors */
+    --forecast-bg: #f8f9fa;
+    --forecast-card: #ffffff;
+    --forecast-header: #0c4a6e;
+    --forecast-subheader: #075985;
+    --forecast-text: #1e293b;
+    --forecast-text-light: #64748b;
+    --forecast-border: #e2e8f0;
+    --forecast-accent: #0ea5e9;
+    --forecast-warning: #f59e0b;
+    --forecast-danger: #ef4444;
+    --forecast-success: #10b981;
+
+    /* Typography */
+    --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+/* Main layout adjustments */
+body {
+    background: var(--forecast-bg);
+    font-family: var(--font-display);
+    color: var(--forecast-text);
+}
+
+/* Header styling */
+.app-header {
+    background: linear-gradient(135deg, var(--forecast-header) 0%, var(--forecast-subheader) 100%);
+    border-bottom: 3px solid var(--forecast-accent);
+    padding: 1.25rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+.app-subtitle {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 400;
+}
+
+/* Control bar - cleaner, more professional */
+.control-bar {
+    background: white;
+    border: 1px solid var(--forecast-border);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.control-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--forecast-text);
+}
+
+/* Professional buttons */
+button {
+    background: var(--forecast-accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-display);
+}
+
+button:hover {
+    background: #0284c7;
+    box-shadow: 0 2px 6px rgba(14, 165, 233, 0.3);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#playPauseButton {
+    background: var(--forecast-success);
+}
+
+#playPauseButton:hover {
+    background: #059669;
+}
+
+#resetButton {
+    background: var(--forecast-warning);
+}
+
+#resetButton:hover {
+    background: #d97706;
+}
+
+/* Side panel - forecast card style */
+.side-panel {
+    background: var(--forecast-bg);
+    border-left: 1px solid var(--forecast-border);
+}
+
+/* Tab bar - cleaner design */
+.tab-bar {
+    background: white;
+    border-bottom: 2px solid var(--forecast-border);
+    display: flex;
+    gap: 0;
+    padding: 0;
+}
+
+.tab-button {
+    background: transparent;
+    color: var(--forecast-text-light);
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 1rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: 0;
+    transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+    background: rgba(14, 165, 233, 0.05);
+    color: var(--forecast-accent);
+    transform: none;
+    box-shadow: none;
+}
+
+.tab-button.active {
+    color: var(--forecast-accent);
+    border-bottom-color: var(--forecast-accent);
+    background: rgba(14, 165, 233, 0.05);
+}
+
+/* Tab content - forecast cards */
+.tab-content {
+    padding: 1.5rem;
+}
+
+.tab-pane {
+    background: white;
+    border: 1px solid var(--forecast-border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Section headers - forecast style */
+.tab-pane h2,
+.tab-pane h3 {
+    color: var(--forecast-header);
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--forecast-border);
+    font-size: 1.125rem;
+}
+
+/* Storm list - table-like forecast display */
+#stormList {
+    background: var(--forecast-bg);
+    border: 1px solid var(--forecast-border);
+    border-radius: 6px;
+    padding: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.storm-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--forecast-border);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+}
+
+.storm-item:hover {
+    background: rgba(14, 165, 233, 0.05);
+}
+
+.storm-item.selected {
+    background: rgba(14, 165, 233, 0.1);
+    border-left: 4px solid var(--forecast-accent);
+}
+
+.storm-item:last-child {
+    border-bottom: none;
+}
+
+.storm-name {
+    font-weight: 600;
+    color: var(--forecast-text);
+    font-size: 0.9375rem;
+}
+
+.storm-details {
+    font-size: 0.8125rem;
+    color: var(--forecast-text-light);
+    margin-top: 0.25rem;
+    font-family: var(--font-mono);
+}
+
+/* Storm editor - forecast data form */
+#stormEditor {
+    background: white;
+    border: 1px solid var(--forecast-border);
+    border-radius: 6px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.form-row label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--forecast-text);
+}
+
+.form-row input,
+.form-row select {
+    background: var(--forecast-bg);
+    border: 1px solid var(--forecast-border);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--forecast-text);
+    font-family: var(--font-mono);
+    transition: border-color 0.2s ease;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+    outline: none;
+    border-color: var(--forecast-accent);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* Sites display - forecast table */
+.site-card {
+    background: white;
+    border: 1px solid var(--forecast-border);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.site-card h4 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--forecast-header);
+    margin: 0 0 0.75rem 0;
+}
+
+.site-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--forecast-text-light);
+    letter-spacing: 0.025em;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--forecast-accent);
+    font-family: var(--font-mono);
+}
+
+.stat-unit {
+    font-size: 0.75rem;
+    color: var(--forecast-text-light);
+    font-weight: 400;
+    margin-left: 0.25rem;
+}
+
+/* Action buttons */
+.button-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.button-primary {
+    background: var(--forecast-accent);
+    flex: 1;
+}
+
+.button-secondary {
+    background: var(--forecast-text-light);
+    flex: 1;
+}
+
+.button-danger {
+    background: var(--forecast-danger);
+}
+
+/* Input styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--forecast-border);
+    border-radius: 4px;
+    height: 6px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--forecast-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--forecast-accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Output displays */
+output {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--forecast-text);
+    background: var(--forecast-bg);
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--forecast-border);
+}
+
+/* Scenarios - forecast conditions list */
+.scenario-item {
+    background: white;
+    border: 1px solid var(--forecast-border);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scenario-item:hover {
+    border-color: var(--forecast-accent);
+    box-shadow: 0 2px 6px rgba(14, 165, 233, 0.15);
+}
+
+.scenario-name {
+    font-weight: 700;
+    color: var(--forecast-header);
+    font-size: 0.9375rem;
+}
+
+.scenario-desc {
+    font-size: 0.8125rem;
+    color: var(--forecast-text-light);
+    margin-top: 0.375rem;
+    line-height: 1.5;
+}
+
+/* Canvas container */
+.sim-canvas-container {
+    background: white;
+    border: 1px solid var(--forecast-border);
+    border-radius: 8px;
+    margin: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+#simCanvas {
+    display: block;
+    background: #e0f2fe;
+}
+
+/* Help modal */
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-width: 600px;
+    padding: 2rem;
+}
+
+.modal-header {
+    border-bottom: 2px solid var(--forecast-border);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    color: var(--forecast-header);
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .control-bar {
+        font-size: 0.8125rem;
+    }
+
+    .form-row {
+        grid-template-columns: 100px 1fr;
+    }
+}
