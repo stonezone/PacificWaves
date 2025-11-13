@@ -120,12 +120,36 @@ try:
             headers=headers,
             json=json_payload
         )
-    
-    print("\n--- RESPONSE ---")
-    print(f"Status: {response.status_code}")
+
+    # Check for HTTP errors (4xx, 5xx status codes)
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        print(f"\n❌ HTTP Error: {e}")
+        print(f"Status: {response.status_code}")
+        try:
+            error_json = response.json()
+            print("Error details:", json.dumps(error_json, indent=2))
+        except:
+            print("Response text:", response.text)
+        exit(1)
+
+    if args.verbose:
+        print("\n--- RESPONSE ---")
+        print(f"Status: {response.status_code}")
+
     response_json = response.json()
-    print("Response JSON:", json.dumps(response_json, indent=2))
-    
+
+    if args.verbose:
+        print("Response JSON:", json.dumps(response_json, indent=2))
+
+    # Check for API error response
+    if "error" in response_json:
+        print(f"\n❌ API Error: {response_json['error'].get('message', 'Unknown error')}")
+        if args.verbose:
+            print("Full error:", json.dumps(response_json['error'], indent=2))
+        exit(1)
+
     data = response_json.get("data", [])
     if not data:
         print("❌ No image returned.")
@@ -134,25 +158,40 @@ try:
     # Save image
     result = data[0]
     image_path = Path("generated_image.png").resolve()
-    
+
     if "url" in result:
         image_url = result["url"]
-        print(f"\n✅ Image URL: {image_url}")
-        img_data = httpx.get(image_url).content
+        if args.verbose:
+            print(f"\n✅ Image URL: {image_url}")
+
+        # Download image with error handling
+        try:
+            img_response = httpx.get(image_url, timeout=30.0)
+            img_response.raise_for_status()
+            img_data = img_response.content
+        except httpx.HTTPError as e:
+            print(f"\n❌ Failed to download image: {e}")
+            exit(1)
     elif "b64_json" in result:
-        print("\n✅ Image returned as base64.")
-        img_data = base64.b64decode(result["b64_json"])
+        if args.verbose:
+            print("\n✅ Image returned as base64.")
+        try:
+            img_data = base64.b64decode(result["b64_json"])
+        except Exception as e:
+            print(f"\n❌ Failed to decode base64 image: {e}")
+            exit(1)
     else:
         print("❌ Unexpected data format.")
         exit(1)
     
     with open(image_path, "wb") as f:
         f.write(img_data)
-    
-    print(f"💾 Image saved as: {image_path}")
-    
+
+    print(f"\n💾 Image saved as: {image_path}")
+
     # Auto-preview image
-    print("🖼️ Opening image...")
+    if args.verbose:
+        print("🖼️ Opening image...")
     webbrowser.open(image_path.as_uri())
     
 except Exception as e:
