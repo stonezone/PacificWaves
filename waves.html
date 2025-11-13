@@ -2720,13 +2720,12 @@ handlePhysicsReset() {
         // --- 10. APP INITIALIZATION ---
         const App = {
             async init() {
-                try {
-
-                });
-                    console.error(`[Global Error: ${context}]`, error);
-                ErrorBoundary.setupGlobalHandler((error, context) => {
                 // Setup global error handlers
+                ErrorBoundary.setupGlobalHandler((error, context) => {
+                    console.error(`[Global Error: ${context}]`, error);
+                });
 
+                try {
                     const canvas = document.getElementById('simCanvas');
                     if (!canvas) throw new Error('Canvas element #simCanvas not found');
                     
