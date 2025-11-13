@@ -976,6 +976,7 @@
         import { Utils } from './src/utilities/coordinate-utils.js';
         import { ErrorBoundary } from './src/core/error-boundary.js';
         import { Validator, ValidationError } from './src/core/validation.js';
+        import { FeatureDetector } from './src/core/feature-detector.js';
 
 
 
@@ -2755,7 +2756,16 @@ handlePhysicsReset() {
         };
         
         // DOM is ready, start the app
-        document.addEventListener('DOMContentLoaded', () => App.init());
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check browser compatibility (Fix #24)
+            if (!FeatureDetector.runChecks()) {
+                console.error('Browser not supported, app will not start');
+                return;
+            }
+
+            // Start the app
+            App.init();
+        });
         
     </script>
 
