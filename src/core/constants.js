@@ -74,6 +74,18 @@ export const CONSTS = {
     // Geographic constants
     EARTH_RADIUS_KM: 6371, // Mean Earth radius in kilometers
 
+    // Swell ray tracing visualization configuration
+    SWELL_RAY: {
+        ANGLE_STEP: 15,      // Emit ray every N degrees (15° = 24 rays per storm)
+        MAX_DISTANCE: 150,   // Maximum cells to propagate ray
+        STEP_SIZE: 1.5,      // Cells per ray tracing step
+        MIN_WIND: 15,        // Minimum wind speed (kts) to show rays
+        ENERGY_DECAY: 0.997, // Natural energy decay per step (spreading)
+        LAND_PENALTY: 0.85,  // Energy multiplier when hitting land
+        MIN_ENERGY: 0.1,     // Stop ray if energy drops below this
+        MAX_DEFLECTION: 120  // Max degrees ray can bend around land (stops if more)
+    },
+
     // Physics
     G: 9.81, PI: Math.PI,
     DEFAULT_DT_HOURS: 1.0, HOUR_TO_S: 3600,
