@@ -9,8 +9,8 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-const PORT = 8000;
-const DIRECTORY = __dirname;
+const PORT = process.env.PORT || 8000;
+const DIRECTORY = path.resolve(__dirname);
 
 // MIME type mapping
 const MIME_TYPES = {
@@ -50,8 +50,21 @@ const server = http.createServer((req, res) => {
         pathname = '/waves.html';
     }
 
-    // Build file path
-    const filePath = path.join(DIRECTORY, pathname);
+    // SECURITY: Strip leading slashes and normalize path to prevent traversal
+    // Remove leading slash(es) before joining with DIRECTORY
+    const sanitizedPath = pathname.replace(/^\/+/, '');
+
+    // Build file path and normalize to resolve any '..' sequences
+    const filePath = path.normalize(path.join(DIRECTORY, sanitizedPath));
+
+    // SECURITY: Verify resolved path is still within DIRECTORY
+    // This prevents attacks like: /../../../etc/passwd
+    if (!filePath.startsWith(DIRECTORY)) {
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('403 Forbidden: Path traversal attempt detected');
+        console.log(`${colors.red}[403]${colors.reset} ${pathname} (path traversal blocked)`);
+        return;
+    }
 
     // Check if file exists
     fs.access(filePath, fs.constants.F_OK, (err) => {
