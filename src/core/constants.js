@@ -71,6 +71,9 @@ export const CONSTS = {
 
     NEARSHORE_CELLS: 15,
 
+    // Geographic constants
+    EARTH_RADIUS_KM: 6371, // Mean Earth radius in kilometers
+
     // Physics
     G: 9.81, PI: Math.PI,
     DEFAULT_DT_HOURS: 1.0, HOUR_TO_S: 3600,

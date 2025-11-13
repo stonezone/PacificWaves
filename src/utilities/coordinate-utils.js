@@ -86,8 +86,7 @@ export const Utils = {
      * @returns {{lat: number, lon: number}} New lat/lon position
      */
     moveLatLon(lat, lon, bearing_rad, dist_km) {
-        const R_km = 6371;
-        const d_R = dist_km / R_km;
+        const d_R = dist_km / CONSTS.EARTH_RADIUS_KM;
         const lat_rad = Utils.degToRad(lat);
         const lon_rad = Utils.degToRad(lon);
 
@@ -106,7 +105,6 @@ export const Utils = {
      * @returns {number} Distance in kilometers
      */
     approxDistKm(lat1, lon1, lat2, lon2) {
-        const R = 6371;
         const [lat1_rad, lon1_rad, lat2_rad, lon2_rad] = [lat1, lon1, lat2, lon2].map(Utils.degToRad);
         const dLat = lat2_rad - lat1_rad;
         const dLon = lon2_rad - lon1_rad;
@@ -114,7 +112,7 @@ export const Utils = {
                 Math.cos(lat1_rad) * Math.cos(lat2_rad) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+        return CONSTS.EARTH_RADIUS_KM * c;
     },
 
     /**
