@@ -1,0 +1,2917 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive North Pacific swell simulation for O'ahu's North Shore">
+    <title>North Shore Swell Lab</title>
+    
+    <style>
+        /* === ENHANCED STYLES WITH ACCESSIBILITY IMPROVEMENTS === */
+        :root {
+            --bg-deep: #0a0f14;
+            --bg-main: #111827;
+            --bg-panel: #1f2937;
+            --bg-header: #374151;
+            --bg-control: #4b5563;
+            --bg-input: #374151;
+            --text-light: #f3f4f6;
+            --text-dim: #9ca3af;
+            --text-heading: #e5e7eb;
+            --border-color: #4b5563;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --accent-purple: #8b5cf6;
+            --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.5);
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-family-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            --transition-fast: 0.15s ease-out;
+            --transition-medium: 0.25s ease-out;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font-family);
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0; /* Prevent flex overflow */
+        }
+
+        .sim-canvas-container {
+            flex: 1;
+            position: relative;
+            background-color: var(--bg-deep);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* REMOVED INVALID CSS: id: "canvasContainer"; */
+        }
+
+        #simCanvas {
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-deep);
+            cursor: crosshair;
+            image-rendering: crisp-edges;
+            touch-action: none; /* Prevent browser gestures */
+        }
+
+        #simCanvas.placing-storm {
+            cursor: cell;
+        }
+
+        #simCanvas:active {
+            cursor: grabbing;
+        }
+
+        /* === CONTROL BAR === */
+        .control-bar {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 48px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .control-group:last-child {
+            border-right: none;
+        }
+
+        .control-bar button, .panel-button {
+            background-color: var(--bg-control);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            font-weight: 500;
+        }
+
+        .control-bar button:hover, .panel-button:hover {
+            background-color: #5a6573;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .control-bar button:focus, .panel-button:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .control-bar button:active, .panel-button:active {
+            transform: translateY(0);
+        }
+
+        .control-bar button.active, .panel-button.active {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .panel-button.btn-primary {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .panel-button.btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .panel-button.btn-danger {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        .panel-button.btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .control-bar label {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-right: 4px;
+            font-weight: 500;
+        }
+
+        .control-bar input[type="range"] {
+            width: 120px;
+            height: 4px;
+            background: var(--bg-input);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control-bar input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .control-bar input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .control-bar input[type="text"],
+        .control-bar input[type="number"],
+        .panel-input {
+            background-color: var(--bg-input);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 8px;
+            width: 80px;
+            font-size: 13px;
+            font-family: var(--font-family-mono);
+        }
+
+        .panel-input {
+            width: 100%;
+        }
+
+        .control-bar input:focus, .panel-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: var(--focus-ring);
+        }
+
+        /* === SIDE PANEL === */
+        .side-panel {
+            width: 350px;
+            min-width: 300px;
+            max-width: 40%;
+            height: 100vh;
+            background-color: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-header);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .tab-button:hover {
+            color: var(--text-light);
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        .tab-button:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+            z-index: 1;
+        }
+
+        .tab-button.active {
+            color: var(--text-light);
+            border-bottom-color: var(--accent-blue);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .panel-content-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) var(--bg-panel);
+        }
+
+        .panel-content-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .panel-content-container::-webkit-scrollbar-track {
+            background: var(--bg-panel);
+        }
+
+        .panel-content-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 16px;
+            animation: fadeIn var(--transition-medium);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* === PANEL COMPONENTS === */
+        h3 {
+            font-size: 16px;
+            color: var(--text-heading);
+            margin: 0 0 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            font-weight: 600;
+        }
+
+        h4 {
+            font-size: 14px;
+            color: var(--text-heading);
+            margin: 16px 0 8px 0;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        #stormList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #stormList li {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 13px;
+            transition: background-color var(--transition-fast);
+            position: relative;
+        }
+
+        #stormList li:last-child {
+            border-bottom: none;
+        }
+
+        #stormList li:hover {
+            background-color: #374151;
+        }
+
+        #stormList li.selected {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        #stormList li.selected:hover {
+            background-color: #2563eb;
+        }
+
+        #stormList li.empty {
+            color: var(--text-dim);
+            cursor: default;
+            text-align: center;
+            padding: 16px;
+        }
+
+        #stormList li.empty:hover {
+            background-color: transparent;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        #stormEditor {
+            border-top: 1px solid var(--border-color);
+            margin-top: 16px;
+            padding-top: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--bg-header);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            font-family: var(--font-family-mono);
+            text-align: right;
+        }
+
+        td:first-child {
+            text-align: left;
+            font-family: var(--font-family);
+        }
+
+        td.peak {
+            font-weight: bold;
+            color: var(--accent-yellow);
+        }
+
+        .scenario-card {
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            transition: all var(--transition-fast);
+        }
+
+        .scenario-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .scenario-card h4 {
+            margin: 0 0 8px 0;
+            color: var(--text-heading);
+        }
+
+        .scenario-card p {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin: 0 0 12px 0;
+            line-height: 1.4;
+        }
+
+        #currentScenarioDisplay {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        #currentScenarioDisplay ul {
+            padding-left: 20px;
+            margin: 8px 0 0 0;
+            font-size: 13px;
+        }
+
+        #currentScenarioDisplay li {
+            margin-bottom: 4px;
+        }
+
+        #selfCheckResults {
+            font-family: var(--font-family-mono);
+            font-size: 12px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #selfCheckResults .pass {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        #selfCheckResults .fail {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        #diagnosticsLog {
+            width: 100%;
+            height: 200px;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            font-family: var(--font-family-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            padding: 8px;
+            overflow-y: auto;
+            white-space: pre;
+            border-radius: 6px;
+            resize: vertical;
+        }
+
+        /* === MODAL === */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-panel);
+            margin: auto;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 600px;
+            border-radius: 12px;
+            color: var(--text-dim);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--text-heading);
+        }
+
+        .modal-content p, .modal-content li {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .modal-content ul {
+            padding-left: 24px;
+            margin: 12px 0;
+        }
+
+        .modal-content kbd {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: var(--font-family-mono);
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .close-button {
+            color: var(--text-dim);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all var(--transition-fast);
+        }
+
+        .close-button:hover {
+            color: var(--text-light);
+            background-color: var(--bg-control);
+        }
+
+        /* === LOADING INDICATOR === */
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-dim);
+            font-size: 14px;
+            display: none;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .loading-indicator.active {
+            display: block;
+        }
+
+        .loading-spinner {
+            border: 3px solid var(--bg-control);
+            border-top: 3px solid var(--accent-blue);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* === TOOLTIPS === */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-panel);
+            color: var(--text-light);
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-fast);
+            border: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        [data-tooltip]:hover::after {
+            opacity: 1;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .side-panel {
+                width: 100%;
+                max-width: 100%;
+                height: 40vh;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+            }
+            
+            .control-bar {
+                font-size: 12px;
+            }
+            
+            .control-bar input[type="range"] {
+                width: 80px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="css/clean-map.css">
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/ocean-sky-theme.css">
+    <link rel="stylesheet" href="css/improved-layout.css">
+</head>
+<body>
+
+    <div class="app-container" role="application" aria-label="North Shore Swell Lab">
+        
+        <!-- Loading Indicator -->
+        <div class="loading-indicator" id="loadingIndicator">
+            <div class="loading-spinner"></div>
+            <div>Initializing simulation...</div>
+        </div>
+        
+        <!-- Main Content (Canvas + Controls) -->
+        <main class="main-content" aria-label="Simulation viewport">
+            
+            <div class="sim-canvas-container" id="canvasContainer">
+                <canvas id="simCanvas" role="img" aria-label="North Pacific swell simulation canvas"></canvas>
+                
+            <div class="control-bar" role="toolbar" aria-label="Simulation controls">
+                <div class="control-group">
+                    <button id="playPauseButton" aria-label="Play or pause simulation" data-tooltip="Spacebar">
+                        <span class="button-text">Play</span>
+                    </button>
+                    <button id="stepButton" aria-label="Step simulation forward one hour" data-tooltip="Step">
+                        Step
+                    </button>
+                    <button id="resetButton" aria-label="Reset simulation" data-tooltip="Reset">
+                        Reset
+                    </button>
+                </div>
+                <div class="control-group">
+                    <label for="timeSlider">Speed:</label>
+                    <input type="range" id="timeSlider" min="0" max="10" value="5" step="1" 
+                           aria-label="Simulation speed" data-tooltip="Adjust simulation speed">
+                    <output id="simTimeDisplay" aria-live="polite">T+ 0.0 h</output>
+                </div>
+                <div class="control-group">
+                    <label for="seedInput">Seed:</label>
+                    <input type="text" id="seedInput" value="oahu-swell-init" 
+                           aria-label="Simulation seed" data-tooltip="Random seed">
+                    <button id="setSeedButton" aria-label="Set new seed">Set</button>
+                </div>
+                <div class="control-group">
+                    <button id="measureToolButton" aria-label="Toggle measurement tool" data-tooltip="Measure distances">
+                        Measure
+                    </button>
+                    <button id="helpButton" aria-label="Show help" data-tooltip="Help &amp; shortcuts">
+                        Help
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Side Panel (Tabs) -->
+        <aside class="side-panel" aria-label="Control panels">
+            <div class="tab-bar" role="tablist">
+                <button class="tab-button active" data-tab="tab-storms" role="tab" aria-selected="true" aria-controls="tab-storms">
+                    Storms
+                </button>
+                <button class="tab-button" data-tab="tab-sites" role="tab" aria-selected="false" aria-controls="tab-sites">
+                    Sites
+                </button>
+                <button class="tab-button" data-tab="tab-env" role="tab" aria-selected="false" aria-controls="tab-env">
+                    Env
+                </button>
+                <button class="tab-button" data-tab="tab-scenarios" role="tab" aria-selected="false" aria-controls="tab-scenarios">
+                    Scenarios
+                </button>
+                <button class="tab-button" data-tab="tab-diag" role="tab" aria-selected="false" aria-controls="tab-diag">
+                    Diag
+                </button>
+            </div>
+            
+            <div class="panel-content-container">
+
+                <!-- Storms Tab -->
+                <section class="tab-content active" id="tab-storms" role="tabpanel" aria-labelledby="tab-storms">
+                    <h3>Storm Manager</h3>
+                    <div class="button-group">
+                        <button id="placeStormButton" class="panel-button btn-primary" data-tooltip="Click on ocean to place">
+                            Place Storm
+                        </button>
+                        <button id="cloneStormButton" class="panel-button" data-tooltip="Clone selected storm">
+                            Clone
+                        </button>
+                        <button id="deleteStormButton" class="panel-button btn-danger" data-tooltip="Delete selected storm">
+                            Delete
+                        </button>
+                    </div>
+                    <ul id="stormList" role="listbox" aria-label="Active storms">
+                        <li class="empty">No storms active.</li>
+                    </ul>
+
+                    <div id="stormEditor" style="display: none;">
+                        <h4 id="stormEditorTitle">Edit Storm</h4>
+                        <form id="stormEditorForm">
+                            <div class="form-group">
+                                <label for="stormName">Name</label>
+                                <input type="text" id="stormName" class="panel-input" aria-label="Storm name">
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="stormLat">Lat (°N)</label>
+                                    <input type="number" id="stormLat" class="panel-input" step="0.5" aria-label="Storm latitude">
+                                </div>
+                                <div class="form-group">
+                                    <label for="stormLon">Lon (°E)</label>
+                                    <input type="number" id="stormLon" class="panel-input" step="0.5" aria-label="Storm longitude">
+                                </div>
+                                <div class="form-group">
+                                    <label for="stormHeading">Heading (°)</label>
+                                    <input type="number" id="stormHeading" class="panel-input" step="5" aria-label="Storm heading">
+                                </div>
+                                <div class="form-group">
+                                    <label for="stormSpeed">Speed (kt)</label>
+                                    <input type="number" id="stormSpeed" class="panel-input" step="1" aria-label="Storm speed">
+                                </div>
+                                <div class="form-group">
+                                    <label for="stormWind">Max Wind (kt)</label>
+                                    <input type="number" id="stormWind" class="panel-input" step="5" aria-label="Storm max wind">
+                                </div>
+                                <div class="form-group">
+                                    <label for="stormRadius">Gale Radius (nm)</label>
+                                    <input type="number" id="stormRadius" class="panel-input" step="10" aria-label="Storm gale radius">
+                                </div>
+                                <div class="form-group">
+                                    <label for="stormLifetime">Lifetime (h)</label>
+                                    <input type="number" id="stormLifetime" class="panel-input" step="6" aria-label="Storm lifetime">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Sites Tab -->
+                <section class="tab-content" id="tab-sites" role="tabpanel" aria-labelledby="tab-sites">
+                    <h3>Site Monitor</h3>
+                    <h4>Peak Event</h4>
+                    <table id="sitePeakTable">
+                        <thead>
+                            <tr><th>Site</th><th>Hs (m)</th><th>Tp (s)</th><th>Dir (°)</th><th>Time (h)</th></tr>
+                        </thead>
+                        <tbody id="sitePeakTableBody">
+                        </tbody>
+                    </table>
+                    
+                    <h4>Current Conditions</h4>
+                    <table id="siteCurrentTable">
+                        <thead>
+                            <tr><th>Site</th><th>Hs (m)</th><th>Tp (s)</th><th>Dir (°)</th><th>Hb (m)</th></tr>
+                        </thead>
+                        <tbody id="siteCurrentTableBody">
+                        </tbody>
+                    </table>
+                    
+                    <h4>24-Hour Forecast</h4>
+                    <div class="forecast-chart">
+                        <canvas id="forecastChartCanvas" class="chart-canvas"></canvas>
+                    </div>
+                </section>
+
+                <!-- Environment Tab -->
+                <section class="tab-content" id="tab-env" role="tabpanel" aria-labelledby="tab-env">
+                    <h3>Environment</h3>
+                    
+                    <div class="form-group">
+                        <label for="bathyPreset">Nearshore Bathymetry</label>
+                        <select id="bathyPreset" class="panel-input" aria-label="Bathymetry preset">
+                            <option value="gentle">Gentle Beach</option>
+                            <option value="reef">Fringing Reef</option>
+                            <option value="canyon">Submarine Canyon</option>
+                        </select>
+                    </div>
+                    
+                    <h4>Advanced Physics (Tunables)</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="const_ALPHA">Wave Growth (ALPHA)</label>
+                            <input type="number" id="const_ALPHA" class="panel-input physics-const" step="1e-8">
+                        </div>
+                        <div class="form-group">
+                            <label for="const_BETA">Wave Decay (BETA)</label>
+                            <input type="number" id="const_BETA" class="panel-input physics-const" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="const_L_F">Fetch Scale H (L_F)</label>
+                            <input type="number" id="const_L_F" class="panel-input physics-const" step="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="const_K_T">Period Growth (K_T)</label>
+                            <input type="number" id="const_K_T" class="panel-input physics-const" step="1e-5">
+                        </div>
+                        <div class="form-group">
+                            <label for="const_L_T">Fetch Scale T (L_T)</label>
+                            <input type="number" id="const_L_T" class="panel-input physics-const" step="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="const_K_THETA">Dir. Relax (K_THETA)</label>
+                            <input type="number" id="const_K_THETA" class="panel-input physics-const" step="0.05">
+                        </div>
+                        <div class="form-group">
+                            <label for="const_GAMMA">Breaking (GAMMA)</label>
+                            <input type="number" id="const_GAMMA" class="panel-input physics-const" step="0.01">
+                        </div>
+                    </div>
+                    <button id="resetPhysicsButton" class="panel-button" data-tooltip="Reset physics to defaults">
+                        Reset to Defaults
+                    </button>
+                </section>
+
+                <!-- Scenarios Tab -->
+                <section class="tab-content" id="tab-scenarios" role="tabpanel" aria-labelledby="tab-scenarios">
+                    <h3>Scenarios</h3>
+                    <div id="scenarioList" role="list">
+                        <!-- JS will populate -->
+                    </div>
+
+                    <div id="currentScenarioDisplay">
+                        <p>No scenario loaded. Select one from the list above.</p>
+                    </div>
+                </section>
+                
+                <!-- Diagnostics Tab -->
+                <section class="tab-content" id="tab-diag" role="tabpanel" aria-labelledby="tab-diag">
+                    <h3>Diagnostics</h3>
+                    <h4>Self Checks</h4>
+                    <div id="selfCheckResults" role="log" aria-live="polite">Running on load...</div>
+                    
+                    <h4>Performance</h4>
+                    <table aria-label="Performance metrics">
+                        <tbody>
+                            <tr><td>FPS</td><td id="diag_fps">--</td></tr>
+                            <tr><td>Update (ms)</td><td id="diag_updateTime">--</td></tr>
+                            <tr><td>Render (ms)</td><td id="diag_renderTime">--</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>Simulation Log (Last Tick)</h4>
+                    <div id="diagnosticsLog" role="log" aria-live="off"></div>
+                </section>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal" role="dialog" aria-labelledby="helpTitle" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="helpTitle">Welcome to the North Shore Swell Lab!</h3>
+                <button class="close-button" id="closeHelpButton" aria-label="Close help">&times;</button>
+            </div>
+            <p>
+                This is an interactive "god view" sandbox for modeling how North Pacific storms
+                generate swell that becomes waves on O'ahu's North Shore.
+            </p>
+            <h4>How to Use</h4>
+            <ul>
+                <li>Use <kbd>Play</kbd> / <kbd>Pause</kbd> (or <kbd>Spacebar</kbd>) to run the simulation.</li>
+                <li>Go to the <strong>Scenarios</strong> tab and click "Load Scenario" to try a pre-built challenge.</li>
+                <li>Go to the <strong>Storms</strong> tab and click <kbd>Place Storm</kbd>. Your cursor is now active. Click anywhere on the ocean to place a new storm.</li>
+                <li>The new storm is automatically selected. You can now edit its properties or
+                    <strong>click and drag it</strong> on the map.</li>
+                <li>The <strong>Sites</strong> tab shows the "Peak" and "Current" swell conditions at three
+                    monitors just offshore.</li>
+                <li>Use the <kbd>Measure</kbd> tool to click two points on the map and find the distance,
+                    bearing, and swell travel time (ETA).</li>
+                <li>In the <strong>Env</strong> tab, you can change the nearshore bathymetry (e.g., from a
+                    gentle beach to a reef) to see how it changes the waves.</li>
+            </ul>
+            <h4>Keyboard Shortcuts</h4>
+            <ul>
+                <li><kbd>Space</kbd> - Play/Pause</li>
+                <li><kbd>Esc</kbd> - Cancel tool/Stop dragging</li>
+                <li><kbd>Delete</kbd> - Delete selected storm</li>
+                <li><kbd>+</kbd>/<kbd>-</kbd> - Adjust simulation speed</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 
+    ================================================================
+    == ENHANCED JAVASSCRIPT
+    ================================================================
+    Critical bug fixes, performance optimizations, and accessibility improvements.
+    -->
+    <script type="module">
+        // Import sprite loader module
+        import { SpriteLoader } from './js/sprite-loader.js';
+
+
+        // --- 1. PHYSICS CONSTANTS (Unchanged) ---
+        const CONSTS = {
+            // Sim Grid
+            GRID_WIDTH: 200,
+            GRID_HEIGHT: 160,
+            CELL_SIZE_KM: 20,
+            
+            // Map Projection
+            MAP_LAT_MIN: 10.0, MAP_LAT_MAX: 65.0,
+            MAP_LON_EAST_EDGE: 130.0, MAP_LON_WEST_EDGE: 250.0,
+            HAWAII_MAIN_ISLAND_CENTER: { lat: 21.5, lon: 202.2 },
+            
+            // Land polygons
+            LAND_POLYGONS: {
+                oahu: [[22.3, 201.5], [22.3, 202.4], [21.8, 202.4], [21.2, 201.7], [21.2, 201.5], [22.3, 201.5]],
+                kauai: [[22.2, 200.3], [22.2, 200.7], [21.8, 200.7], [21.8, 200.3], [22.2, 200.3]],
+                japan: [[30, 130], [30, 138], [35, 138], [34, 142], [40, 145], [45, 140], [42, 138], [30, 130]],
+                kamchatka: [[50, 155], [62, 165], [60, 170], [50, 160], [50, 155]],
+                alaska: [[52, 185], [55, 200], [60, 195], [65, 190], [68, 210], [68, 220], [60, 215], [55, 210], [52, 185]],
+                namerica: [[60, 215], [60, 230], [55, 235], [50, 240], [45, 240], [35, 245], [30, 240], [30, 220], [45, 220], [55, 215], [60, 215]]
+            },
+            
+            NEARSHORE_CELLS: 15,
+            
+            // Physics
+            G: 9.81, PI: Math.PI,
+            DEFAULT_DT_HOURS: 1.0, HOUR_TO_S: 3600,
+            KT_TO_MPS: 0.514444, KM_TO_M: 1000, NM_TO_M: 1852,
+            
+            DEFAULT_PHYSICS: {
+                ALPHA: 5.0e-7, BETA: 0.03, L_F: 100.0, K_T: 8.0e-5, L_T: 150.0,
+                K_THETA: 0.1, T_MIN: 3.0, T_MAX: 22.0, DEEP_H: 4000, SHALLOW_H_START: 100, GAMMA: 0.78,
+            },
+            
+            MAX_FETCH_CELLS: 50, MIN_FETCH_KM: 5.0,
+            WIND_FIELD_GALE_KT: 34.0,
+        };
+
+        // --- 2. ENHANCED PRNG (SplitMix64 variant) ---
+        class PRNG {
+            constructor(seedStr) {
+                this.seed = this.hashCode(seedStr || `${Date.now()}-${Math.random()}`);
+                this.noise_seed = this.hashCode(`noise_${this.seed}`);
+            }
+            
+            // FNV-1a inspired hash
+            hashCode(str) {
+                let hash = 2166136261 >>> 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash ^= str.charCodeAt(i);
+                    hash = (hash * 16777619) >>> 0;
+                }
+                return hash;
+            }
+
+            next() {
+                // SplitMix64
+                // Simple LCG (Linear Congruential Generator)
+                this.seed = (this.seed * 1664525 + 1013904223) >>> 0;
+                return this.seed;
+            }
+            
+            random() { return (this.next() >>> 0) / 4294967296; }
+            
+            noise(x) {
+                return ((this.hashCode(this.noise_seed + x) >>> 0) % 1000) / 1000;
+            }
+        }
+
+        // --- 3. GLOBAL STATE ---
+        let state = { initialized: false };
+
+        // --- 4. SIMULATION CORE (Critical Bug Fixes & Optimizations) ---
+        const Sim = {
+            init(seedStr) {
+                console.log(`Sim.init() with seed: "${seedStr}"`);
+                
+                // Show loading indicator during initialization
+                document.getElementById('loadingIndicator')?.classList.add('active');
+                
+                state.seedStr = seedStr;
+                state.rng = new PRNG(seedStr);
+                
+                state.isRunning = false;
+                state.simTimeHours = 0;
+                state.dtHours = CONSTS.DEFAULT_DT_HOURS;
+                state.simSpeed = 5;
+                
+                state.gridWidth = CONSTS.GRID_WIDTH;
+                state.gridHeight = CONSTS.GRID_HEIGHT;
+                
+                const gridCount = state.gridWidth * state.gridHeight;
+                
+                // Primary grid buffers
+                state.grid = {
+                    hs: new Float32Array(gridCount),
+                    tp: new Float32Array(gridCount),
+                    theta: new Float32Array(gridCount),
+                    windU: new Float32Array(gridCount),
+                    windV: new Float32Array(gridCount),
+                    fetch: new Float32Array(gridCount),
+                };
+                
+                // Secondary buffer for semi-lagrangian advection
+                state.grid_old = {
+                    hs: new Float32Array(gridCount),
+                    tp: new Float32Array(gridCount),
+                    theta: new Float32Array(gridCount),
+                    windU: new Float32Array(gridCount),
+                    windV: new Float32Array(gridCount),
+                    fetch: new Float32Array(gridCount),
+                };
+                
+                // Static grid properties
+                state.staticGrid = {
+                    depth: new Float32Array(gridCount),
+                    isLand: new Uint8Array(gridCount),
+                };
+                
+                state.storms = [];
+                state.nextStormId = 0;
+                
+                state.sites = [
+                    { name: 'Site A (Canyon)', x: 0, y: 0, history: [], peak: null, current: null },
+                    { name: 'Site B (Reef)', x: 0, y: 0, history: [], peak: null, current: null },
+                    { name: 'Site C (Beach)', x: 0, y: 0, history: [], peak: null, current: null },
+                    { name: 'Kauai West', x: 0, y: 0, history: [], peak: null, current: null },
+                    { name: 'Kauai North', x: 0, y: 0, history: [], peak: null, current: null },
+                    { name: 'Kauai East', x: 0, y: 0, history: [], peak: null, current: null },
+                ];
+                
+                state.physics = JSON.parse(JSON.stringify(CONSTS.DEFAULT_PHYSICS)); // Deep copy
+                
+                // Pre-defined scenarios
+                state.scenarios = [
+                    { 
+                        id: 's1', name: 'NW Swell', desc: 'Generate ≥ 2.5m (8ft), 12s+ swell at Site C (Beach).',
+                        goals: [{ site: 'Site C (Beach)', key: 'hs', value: 2.5 }, { site: 'Site C (Beach)', key: 'tp', value: 12 }],
+                        isComplete: false, setup: () => Sim.addStorm(38.0, 185.0, 30, 100, 45, 120, 72, 'NW Storm')
+                    },
+                    { 
+                        id: 's2', name: 'The Big One', desc: 'Generate ≥ 6m (20ft), 16s+ swell at Site B (Reef).',
+                        goals: [{ site: 'Site B (Reef)', key: 'hs', value: 6.0 }, { site: 'Site B (Reef)', key: 'tp', value: 16 }],
+                        isComplete: false, setup: () => Sim.addStorm(42.0, 190.0, 25, 130, 65, 300, 96, 'Big Storm')
+                    },
+                    { 
+                        id: 's3', name: 'West Bowl', desc: 'Generate ≥ 4m (13ft), 14s+ swell at Site A (Canyon).',
+                        goals: [{ site: 'Site A (Canyon)', key: 'hs', value: 4.0 }, { site: 'Site A (Canyon)', key: 'tp', value: 14 }],
+                        isComplete: false, setup: () => Sim.addStorm(35.0, 175.0, 20, 110, 50, 250, 72, 'West Storm')
+                    }
+                ];
+                state.currentScenario = null;
+                
+                state.ui = {
+                    activeTab: 'tab-storms',
+                    selectedStormId: null,
+                    isPlacingStorm: false,
+                    measurementTool: { active: false, p1: null, p2: null, mousePos: null },
+                    isDraggingStorm: false,
+                    lastLogTime: 0,
+                    logThrottle: 1000,
+                    updateTime: 0,
+                    renderTime: 0,
+                    canvasSize: { w: 0, h: 0 },
+                    canvasOffset: { x: 0, y: 0 },
+                };
+                
+                // Initialize grid
+                this.initGrid();
+                this.setBathyPreset('gentle');
+                
+                // Mark as initialized
+                state.initialized = true;
+                document.getElementById('loadingIndicator')?.classList.remove('active');
+            },
+            
+            initGrid() {
+                const { gridWidth, gridHeight, staticGrid } = state;
+                const { i: oahuI, j: oahuJ } = Utils.latLonToCell(
+                    CONSTS.HAWAII_MAIN_ISLAND_CENTER.lat, 
+                    CONSTS.HAWAII_MAIN_ISLAND_CENTER.lon
+                );
+                
+                for (let j = 0; j < gridHeight; j++) {
+                    for (let i = 0; i < gridWidth; i++) {
+                        const idx = j * gridWidth + i;
+                        const { lat, lon } = Utils.cellToLatLon(i, j);
+                        
+                        // Reset all dynamic fields
+                        state.grid.hs[idx] = 0;
+                        state.grid.tp[idx] = CONSTS.DEFAULT_PHYSICS.T_MIN;
+                        state.grid.theta[idx] = 0;
+                        state.grid.windU[idx] = 0;
+                        state.grid.windV[idx] = 0;
+                        state.grid.fetch[idx] = 0;
+                        
+                        // Land check
+                        const isLand = Utils.isPointInLand(lat, lon);
+                        staticGrid.isLand[idx] = isLand ? 1 : 0;
+                        staticGrid.depth[idx] = isLand ? 0 : CONSTS.DEFAULT_PHYSICS.DEEP_H;
+                    }
+                }
+                
+                // Place sites just offshore
+                const landStartY = Math.round(oahuJ);
+                state.sites[0].x = Math.round(oahuI) - 5; // Site A (Canyon)
+                state.sites[0].y = landStartY - 2;
+                state.sites[1].x = Math.round(oahuI);     // Site B (Reef)
+                state.sites[1].y = landStartY - 2;
+                state.sites[2].x = Math.round(oahuI) + 5; // Site C (Beach)
+                state.sites[2].y = landStartY - 2;
+
+                // Position Kauai sites (offshore north shore)
+                const kauaiCenter = { lat: 22.0, lon: 200.5 };
+                const { i: kauaiI, j: kauaiJ } = Utils.latLonToCell(kauaiCenter.lat, kauaiCenter.lon);
+
+                state.sites[3].x = Math.round(kauaiI) - 4; // Kauai West - 4 cells west
+                state.sites[3].y = Math.round(kauaiJ) - 3; // 3 cells north (offshore)
+
+                state.sites[4].x = Math.round(kauaiI);     // Kauai North - center
+                state.sites[4].y = Math.round(kauaiJ) - 3; // 3 cells north (offshore)
+
+                state.sites[5].x = Math.round(kauaiI) + 4; // Kauai East - 4 cells east
+                state.sites[5].y = Math.round(kauaiJ) - 3; // 3 cells north (offshore)
+                
+                state.sites.forEach(site => {
+                    site.peak = { hs: 0, tp: 0, dir: 0, time: 0 };
+                    site.current = { hs: 0, tp: 0, dir: 0, hb: 0 };
+                    site.history = [];
+                });
+            },
+            
+            setBathyPreset(preset) {
+                const { gridWidth, gridHeight, staticGrid } = state;
+                const { j: oahuJ } = Utils.latLonToCell(
+                    CONSTS.HAWAII_MAIN_ISLAND_CENTER.lat, 
+                    CONSTS.HAWAII_MAIN_ISLAND_CENTER.lon
+                );
+                
+                const nearshoreStartY = Math.round(oahuJ) - CONSTS.NEARSHORE_CELLS;
+                const nearshoreEndY = Math.round(oahuJ);
+
+                for (let j = 0; j < gridHeight; j++) {
+                    for (let i = 0; i < gridWidth; i++) {
+                        const idx = j * gridWidth + i;
+                        if (staticGrid.isLand[idx] === 1) continue;
+                        
+                        let depth = CONSTS.DEFAULT_PHYSICS.DEEP_H;
+                        
+                        if (j >= nearshoreStartY && j < nearshoreEndY) {
+                            const ramp_norm = (j - nearshoreStartY) / CONSTS.NEARSHORE_CELLS;
+                            
+                            switch(preset) {
+                                case 'reef':
+                                    depth = ramp_norm < 0.6 ? Utils.lerp(CONSTS.DEFAULT_PHYSICS.SHALLOW_H_START, 15, ramp_norm / 0.6) :
+                                            ramp_norm < 0.9 ? 15 : Utils.lerp(15, 2, (ramp_norm - 0.9) / 0.1);
+                                    break;
+                                case 'canyon':
+                                    const baseDepth = Utils.lerp(CONSTS.DEFAULT_PHYSICS.SHALLOW_H_START, 2, ramp_norm);
+                                    const canyonX = state.sites[0].x;
+                                    const canyonWidth = 6;
+                                    const dist_from_canyon = Math.abs(i - canyonX);
+                                    if (dist_from_canyon < canyonWidth) {
+                                        const canyonDepth = Utils.lerp(CONSTS.DEFAULT_PHYSICS.SHALLOW_H_START, 50, ramp_norm);
+                                        depth = Utils.lerp(baseDepth, canyonDepth, (canyonWidth - dist_from_canyon) / canyonWidth);
+                                    } else {
+                                        depth = baseDepth;
+                                    }
+                                    break;
+                                default: // gentle
+                                    depth = Utils.lerp(CONSTS.DEFAULT_PHYSICS.SHALLOW_H_START, 2, ramp_norm);
+                            }
+                        }
+                        
+                        staticGrid.depth[idx] = depth;
+                    }
+                }
+            },
+            
+            step() {
+                if (!state.initialized) return;
+                
+                const t1 = performance.now();
+                
+                // Explicit buffer swap for clarity
+                const tempGrid = state.grid;
+                state.grid = state.grid_old;
+                state.grid_old = tempGrid;
+                
+                // Update all physics
+                this.updateStorms(state.dtHours);
+                this.updateWindField();
+                this.updateFetch();
+                this.updateWaveGeneration(state.dtHours);
+                this.updatePropagation(state.dtHours);
+                this.updateShoalingAndRefraction();
+                this.updateSites();
+                this.updateScoring();
+                
+                state.simTimeHours += state.dtHours;
+                const t2 = performance.now();
+                state.ui.updateTime = t2 - t1;
+                
+                if (t2 - state.ui.lastLogTime > state.ui.logThrottle) {
+                    this.logTick();
+                    state.ui.lastLogTime = t2;
+                }
+            },
+            
+            updateStorms(dtHours) {
+                for (let i = state.storms.length - 1; i >= 0; i--) {
+                    const storm = state.storms[i];
+                    storm.age += dtHours;
+                    
+                    // Dissipate storms beyond lifetime
+                    if (storm.age > storm.lifetime) {
+                        storm.wind = Math.max(0, storm.wind * 0.9);
+                        storm.radius = Math.max(0, storm.radius * 0.9);
+                        
+                        // Remove when effectively dead, unless selected
+                        if (storm.wind < 5 && storm.id !== state.ui.selectedStormId) {
+                            state.storms.splice(i, 1);
+                            continue;
+                        }
+                    }
+                    
+                    // Move storm
+                    const dist_km = storm.speed * CONSTS.KT_TO_MPS * CONSTS.HOUR_TO_S * dtHours / CONSTS.KM_TO_M;
+                    const bearing_rad = Utils.bearingToRad(storm.heading);
+                    const { lat, lon } = Utils.moveLatLon(storm.lat, storm.lon, bearing_rad, dist_km);
+                    
+                    // Bounds check
+                    if (lat < CONSTS.MAP_LAT_MIN || lat > CONSTS.MAP_LAT_MAX || 
+                        lon < CONSTS.MAP_LON_EAST_EDGE || lon > CONSTS.MAP_LON_WEST_EDGE) {
+                        if (storm.id !== state.ui.selectedStormId) {
+                            state.storms.splice(i, 1);
+                            continue;
+                        }
+                    }
+                    
+                    storm.lat = lat;
+                    storm.lon = lon;
+                    storm.track.push({ lat, lon });
+                    if (storm.track.length > 50) storm.track.shift();
+
+                    // PHASE 4: Storm land dissipation
+                    // Check if storm is over land and dissipate accordingly
+                    const isOverLand = Utils.isPointInLand(storm.lat, storm.lon);
+                    if (isOverLand) {
+                        // Mark storm as being over land and start dissipation
+                        if (!storm.onLand) {
+                            storm.onLand = true;
+                            storm.landDecayRate = 0.05; // Lose 5% intensity per timestep on land
+                            console.log(`Storm "${storm.name}" (ID: ${storm.id}) moved over land - beginning dissipation`);
+                        }
+
+                        // Reduce wind speed and radius while over land
+                        storm.wind *= (1 - storm.landDecayRate);
+                        storm.radius *= (1 - storm.landDecayRate * 0.5); // Radius decays slower
+
+                        // Remove storm if too weak, unless selected
+                        if (storm.wind < 5.0 && storm.id !== state.ui.selectedStormId) {
+                            console.log(`Storm "${storm.name}" (ID: ${storm.id}) dissipated over land (wind: ${storm.wind.toFixed(1)} kts)`);
+                            state.storms.splice(i, 1);
+                            continue;
+                        }
+                    } else {
+                        // Storm is back over water
+                        if (storm.onLand) {
+                            console.log(`Storm "${storm.name}" (ID: ${storm.id}) moved back over water`);
+                        }
+                        storm.onLand = false;
+                    }
+                }
+            },
+            
+            updateWindField() {
+                const { gridWidth, gridHeight, grid, storms, staticGrid } = state;
+                const INFLOW_ANGLE_RAD = Utils.degToRad(25);
+                
+                grid.windU.fill(0);
+                grid.windV.fill(0);
+
+                storms.forEach(storm => {
+                    const storm_bearing_rad = Utils.bearingToRad(storm.heading);
+                    const storm_speed_mps = storm.speed * CONSTS.KT_TO_MPS;
+                    const stormU = Math.cos(storm_bearing_rad) * storm_speed_mps;
+                    const stormV = Math.sin(storm_bearing_rad) * storm_speed_mps;
+                    
+                    // Spatial optimization: only affect cells within 2x radius
+                    const { i: si, j: sj } = Utils.latLonToCell(storm.lat, storm.lon);
+                    const radiusCells = Math.ceil(storm.radius / (CONSTS.NM_TO_M / 1000) / CONSTS.CELL_SIZE_KM * 2);
+                    
+                    const iStart = Math.max(0, Math.floor(si - radiusCells));
+                    const iEnd = Math.min(gridWidth, Math.ceil(si + radiusCells));
+                    const jStart = Math.max(0, Math.floor(sj - radiusCells));
+                    const jEnd = Math.min(gridHeight, Math.ceil(sj + radiusCells));
+                    
+                    for (let j = jStart; j < jEnd; j++) {
+                        for (let i = iStart; i < iEnd; i++) {
+                            const idx = j * gridWidth + i;
+                            if (staticGrid.isLand[idx] === 1) continue;
+                            
+                            const { lat, lon } = Utils.cellToLatLon(i, j);
+                            const dist_km = Utils.approxDistKm(lat, lon, storm.lat, storm.lon);
+                            const dist_nm = dist_km / (CONSTS.NM_TO_M / CONSTS.KM_TO_M);
+                            
+                            // Gaussian Wind Field
+                            let windSpeedKt = 0;
+                            if (storm.radius > 0 && storm.wind > CONSTS.WIND_FIELD_GALE_KT) {
+                                const R_scale_sq = (storm.radius * storm.radius) / Math.log(storm.wind / CONSTS.WIND_FIELD_GALE_KT);
+                                windSpeedKt = storm.wind * Math.exp(-(dist_nm * dist_nm) / R_scale_sq);
+                            }
+                            
+                            if (windSpeedKt > 5) {
+                                const wind_mps = windSpeedKt * CONSTS.KT_TO_MPS;
+                                const rel_x_km = (lon - storm.lon) * 111 * Math.cos(Utils.degToRad(lat));
+                                const rel_y_km = (lat - storm.lat) * 111;
+                                const bearing_to_cell_rad = Math.atan2(rel_y_km, rel_x_km);
+                                
+                                const rot_angle_rad = bearing_to_cell_rad + (CONSTS.PI / 2) - INFLOW_ANGLE_RAD;
+                                const rotU = Math.cos(rot_angle_rad) * wind_mps;
+                                const rotV = Math.sin(rot_angle_rad) * wind_mps;
+                                
+                                // Superposition
+                                grid.windU[idx] += rotU + stormU;
+                                grid.windV[idx] += rotV + stormV;
+                            }
+                        }
+                    }
+                });
+            },
+            
+            updateFetch() {
+                const { gridWidth, gridHeight, grid, staticGrid } = state;
+                
+                for (let j = 0; j < gridHeight; j++) {
+                    for (let i = 0; i < gridWidth; i++) {
+                        const idx = j * gridWidth + i;
+                        if (staticGrid.isLand[idx] === 1) {
+                            grid.fetch[idx] = 0;
+                            continue;
+                        }
+                        
+                        const U = grid.windU[idx];
+                        const V = grid.windV[idx];
+                        const windSpeed = Math.sqrt(U*U + V*V);
+                        
+                        if (windSpeed < 5) {
+                            grid.fetch[idx] = 0;
+                            continue;
+                        }
+                        
+                        // Look upwind
+                        const windTheta = Math.atan2(V, U);
+                        const cosT = Math.cos(windTheta);
+                        const sinT = Math.sin(windTheta);
+                        
+                        let fetch_km = 0;
+                        for (let k = 1; k < CONSTS.MAX_FETCH_CELLS; k++) {
+                            const ii = Math.round(i - k * cosT);
+                            const jj = Math.round(j - k * sinT);
+                            
+                            if (ii < 0 || ii >= gridWidth || jj < 0 || jj >= gridHeight) break;
+                            
+                            const idx_upwind = jj * gridWidth + ii;
+                            if (staticGrid.isLand[idx_upwind] === 1) break;
+                            
+                            const U_up = grid.windU[idx_upwind];
+                            const V_up = grid.windV[idx_upwind];
+                            const dotProd = (U * U_up + V * V_up) / (windSpeed * Math.sqrt(U_up*U_up + V_up*V_up) + 1e-6);
+                            
+                            if (dotProd < 0.8) break;
+                            fetch_km += CONSTS.CELL_SIZE_KM;
+                        }
+                        grid.fetch[idx] = Math.max(CONSTS.MIN_FETCH_KM, fetch_km);
+                    }
+                }
+            },
+            
+            updateWaveGeneration(dtHours) {
+                const { gridWidth, gridHeight, grid, grid_old, staticGrid } = state;
+                const { ALPHA, BETA, L_F, K_T, L_T, T_MIN, T_MAX, K_THETA } = state.physics;
+                
+                for (let j = 0; j < gridHeight; j++) {
+                    for (let i = 0; i < gridWidth; i++) {
+                        const idx = j * gridWidth + i;
+                        if (staticGrid.isLand[idx] === 1) continue;
+                        
+                        const U = grid.windU[idx];
+                        const V = grid.windV[idx];
+                        const U10 = Math.sqrt(U*U + V*V);
+                        const U10_kts = U10 / CONSTS.KT_TO_MPS;
+                        const F = grid.fetch[idx];
+                        
+                        const hs_in = grid_old.hs[idx];
+                        const tp_in = grid_old.tp[idx];
+                        const theta_in = grid_old.theta[idx];
+                        
+                        let hs_out = hs_in, tp_out = tp_in, theta_out = theta_in;
+                        
+                        if (U10_kts > 5 && F > 0) {
+                            const growth_H = ALPHA * (U10_kts**2) * (1 - Math.exp(-F / L_F)) * dtHours;
+                            const decay_H = BETA * hs_in * dtHours;
+                            hs_out = hs_in + growth_H - decay_H;
+                            
+                            const growth_T = K_T * U10_kts * (1 - Math.exp(-F / L_T)) * dtHours;
+                            tp_out = Utils.clamp(tp_in + growth_T, T_MIN, T_MAX);
+                            
+                            theta_out = Utils.angularLerp(theta_in, Math.atan2(V, U), K_THETA);
+                        } else {
+                            hs_out = Math.max(0, hs_in - BETA * hs_in * dtHours);
+                            tp_out = tp_in;
+                            theta_out = theta_in;
+                        }
+                        
+                        state.grid.hs[idx] = Math.max(0, hs_out);
+                        state.grid.tp[idx] = Math.max(T_MIN, tp_out);
+                        state.grid.theta[idx] = theta_out;
+                    }
+                }
+            },
+            
+            updatePropagation(dtHours) {
+                const { gridWidth, gridHeight, grid, grid_old, staticGrid } = state;
+                const dt_s = dtHours * CONSTS.HOUR_TO_S;
+                const cellSize_m = CONSTS.CELL_SIZE_KM * CONSTS.KM_TO_M;
+                
+                for (let j = 0; j < gridHeight; j++) {
+                    for (let i = 0; i < gridWidth; i++) {
+                        const idx = j * gridWidth + i;
+                        if (staticGrid.isLand[idx] === 1) continue;
+                        
+                        const tp = grid.tp[idx];
+                        const theta = grid.theta[idx];
+                        const cg_deep = (CONSTS.G * tp) / (4 * CONSTS.PI);
+                        
+                        const u_g = cg_deep * Math.cos(theta);
+                        const v_g = cg_deep * Math.sin(theta);
+                        
+                        const source_i = i - (u_g * dt_s) / cellSize_m;
+                        const source_j = j - (v_g * dt_s) / cellSize_m;
+                        
+                        const advected_hs = Utils.bilerp(grid_old.hs, source_i, source_j, gridWidth, gridHeight);
+                        const advected_tp = Utils.bilerp(grid_old.tp, source_i, source_j, gridWidth, gridHeight, CONSTS.DEFAULT_PHYSICS.T_MIN);
+                        const advected_theta = Utils.bilerpAngle(grid_old.theta, source_i, source_j, gridWidth, gridHeight);
+                        
+                        // Combine by energy
+                        const E_advected = advected_hs**2;
+                        const E_generated = grid.hs[idx]**2;
+                        
+                        if (E_generated > E_advected) {
+                            // New swell dominates (already in grid)
+                        } else {
+                            grid.hs[idx] = advected_hs;
+                            grid.tp[idx] = advected_tp;
+                            grid.theta[idx] = advected_theta;
+                        }
+                    }
+                }
+            },
+            
+            updateShoalingAndRefraction() {
+                const { gridWidth, gridHeight, grid, staticGrid } = state;
+                const { DEEP_H, SHALLOW_H_START, GAMMA } = state.physics;
+                
+                const { j: oahuJ } = Utils.latLonToCell(
+                    CONSTS.HAWAII_MAIN_ISLAND_CENTER.lat, 
+                    CONSTS.HAWAII_MAIN_ISLAND_CENTER.lon
+                );
+                
+                const nearshoreStartY = Math.round(oahuJ) - CONSTS.NEARSHORE_CELLS;
+                const nearshoreEndY = Math.round(oahuJ);
+
+                // CRITICAL FIX: Process from shallow to deep (shore outward)
+                // This ensures we read from already-processed deeper cells
+                for (let j = nearshoreEndY; j >= nearshoreStartY; j--) {
+                    for (let i = 0; i < gridWidth; i++) {
+                        const idx = j * gridWidth + i;
+                        if (staticGrid.isLand[idx] === 1) continue;
+                        
+                        const h = staticGrid.depth[idx];
+                        if (h > SHALLOW_H_START) continue;
+                        
+                        const theta = grid.theta[idx];
+                        const cosT = Math.cos(theta);
+                        const sinT = Math.sin(theta);
+                        
+                        const i_up = Math.round(i - cosT);
+                        const j_up = Math.round(j - sinT);
+                        
+                        if (i_up < 0 || i_up >= gridWidth || j_up < 0 || j_up >= gridHeight) continue;
+                        
+                        const idx_up = j_up * gridWidth + i_up;
+                        if (staticGrid.isLand[idx_up] === 1) continue;
+                        
+                        const h_up = staticGrid.depth[idx_up];
+                        const hs_up = grid.hs[idx_up];
+                        const tp_up = grid.tp[idx_up];
+                        const theta_up = grid.theta[idx_up];
+                        
+                        // Wave celerity (cap depth for stability)
+                        const c_up = Math.sqrt(CONSTS.G * Math.min(h_up, 50));
+                        const c = Math.sqrt(CONSTS.G * Math.min(h, 50));
+                        
+                        // Refraction (Snell's Law)
+                        let theta_new = theta_up;
+                        if (c_up > 0) {
+                            const sin_theta_new = (c / c_up) * Math.sin(theta_up);
+                            if (Math.abs(sin_theta_new) <= 1) {
+                                theta_new = Math.asin(sin_theta_new);
+                            }
+                        }
+                        
+                        // Shoaling (energy conservation)
+                        const K_s = c > 0 ? Math.sqrt(c_up / c) : 1.0;
+                        let hs_new = hs_up * K_s;
+                        
+                        // Breaking cap
+                        const h_b = GAMMA * h;
+                        hs_new = Math.min(hs_new, h_b);
+                        
+                        grid.hs[idx] = hs_new;
+                        grid.tp[idx] = tp_up;
+                        grid.theta[idx] = theta_new;
+                    }
+                }
+            },
+            
+            updateSites() {
+                const { gridWidth, grid, staticGrid } = state;
+                
+                state.sites.forEach(site => {
+                    const idx = site.y * gridWidth + site.x;
+                    if (idx < 0 || idx >= grid.hs.length || staticGrid.isLand[idx] === 1) return;
+                    
+                    const hs = grid.hs[idx];
+                    const tp = grid.tp[idx];
+                    const theta = grid.theta[idx];
+                    const h = staticGrid.depth[idx];
+                    const hb = state.physics.GAMMA * h;
+                    const dir = Utils.radToBearing(theta);
+                    
+                    site.current = { hs, tp, dir, hb };
+                    
+                    // Update peak
+                    if (site.peak === null || hs > site.peak.hs) {
+                        site.peak = { hs, tp, dir, time: state.simTimeHours };
+                    }
+                    
+                    // History
+                    site.history.push({ t: state.simTimeHours, hs, tp });
+                    if (site.history.length > 100) site.history.shift();
+                });
+            },
+            
+            updateScoring() {
+                if (!state.currentScenario) return;
+                
+                state.currentScenario.isComplete = state.currentScenario.goals.every(goal => {
+                    const site = state.sites.find(s => s.name === goal.site);
+                    return site && site.peak[goal.key] >= goal.value;
+                });
+            },
+            
+            logTick() {
+                const siteSummary = {};
+                state.sites.forEach(s => {
+                    siteSummary[s.name.split(' ')[2]] = { 
+                        hs: s.current.hs.toFixed(2), 
+                        tp: s.current.tp.toFixed(2)
+                    };
+                });
+                
+                const logEntry = {
+                    seed: state.seedStr,
+                    time_h: state.simTimeHours.toFixed(1),
+                    storms: state.storms.length,
+                    sites: siteSummary,
+                    perf_ms: { 
+                        update: state.ui.updateTime.toFixed(2), 
+                        render: state.ui.renderTime.toFixed(2) 
+                    }
+                };
+                
+                const logString = JSON.stringify(logEntry);
+                console.log(`[SIM] ${logString}`);
+                
+                const logEl = document.getElementById('diagnosticsLog');
+                if (logEl) {
+                    logEl.textContent = logString + '\n' + logEl.textContent.substring(0, 2000);
+                }
+            },
+            
+            addStorm(lat = 40.0, lon = 190.0, speed = 20, heading = 120, wind = 50, radius = 200, lifetime = 72, name = null) {
+                // BUG FIX: Proper default parameters and validation
+                const storm = {
+                    id: state.nextStormId++,
+                    name: name || `Storm ${state.nextStormId}`,
+                    lat: isNaN(lat) ? 40.0 : lat,
+                    lon: isNaN(lon) ? 190.0 : lon,
+                    speed: isNaN(speed) ? 20 : speed,
+                    heading: isNaN(heading) ? 120 : heading,
+                    wind: isNaN(wind) ? 50 : wind,
+                    radius: isNaN(radius) ? 200 : radius,
+                    lifetime: isNaN(lifetime) ? 72 : lifetime,
+                    age: 0,
+                    track: [{ lat: lat, lon: lon }],
+                };
+                state.storms.push(storm);
+                console.log(`Storm added: "${storm.name}" (ID: ${storm.id})`);
+                return storm;
+            },
+            
+            getStorm(id) {
+                return state.storms.find(s => s.id === id);
+            },
+            
+            deleteStorm(id) {
+                const stormIdx = state.storms.findIndex(s => s.id === id);
+                if (stormIdx !== -1) {
+                    state.storms.splice(stormIdx, 1);
+                    if (state.ui.selectedStormId === id) {
+                        state.ui.selectedStormId = null;
+                    }
+                    return true;
+                }
+                return false;
+            },
+            
+            loadScenario(id) {
+                const scenario = state.scenarios.find(s => s.id === id);
+                if (!scenario) {
+                    console.error(`Scenario ${id} not found`);
+                    return;
+                }
+                
+                // Preserve seed
+                const currentSeed = state.seedStr;
+                Sim.init(currentSeed);
+                
+                // Re-find scenario in new state
+                const newScenario = state.scenarios.find(s => s.id === id);
+                state.currentScenario = newScenario;
+                
+                if (scenario.setup) {
+                    scenario.setup();
+                }
+                
+                UI.updateAll();
+                console.log(`Loaded scenario: ${scenario.name}`);
+            }
+        };
+
+        // --- 5. RENDERER (Performance Optimized) ---
+        const Render = {
+            ctx: null,
+            canvas: null,
+            lastRenderTime: 0,
+            frameCount: 0,
+            fps: 0,
+            resizeTimeout: null,
+            backgroundImage: null,
+            backgroundLoaded: false,
+            
+            init(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d', { alpha: false, antialias: false });
+                this.resizeCanvas();
+                window.addEventListener('resize', this.debounceResize.bind(this));
+            },
+
+            async loadBackgroundImage() {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.backgroundImage = img;
+                        this.backgroundLoaded = true;
+                        console.log("✓ Background image loaded successfully", img.width, "x", img.height);
+                        resolve(img);
+                    };
+                    img.onerror = (err) => {
+                        console.warn("⚠️ Failed to load background image, using fallback", err);
+                        this.backgroundLoaded = false;
+                        reject(err);
+                    };
+                    img.src = "game-background.jpeg";
+                });
+            },
+            debounceResize() {
+                clearTimeout(this.resizeTimeout);
+                this.resizeTimeout = setTimeout(() => this.resizeCanvas(), 100);
+            },
+            
+            resizeCanvas() {
+                const container = document.getElementById('canvasContainer');
+                if (!container) return;
+                
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                const gridAspect = CONSTS.GRID_WIDTH / CONSTS.GRID_HEIGHT;
+                
+                let canvasW, canvasH;
+                if (w / h > gridAspect) {
+                    canvasH = Math.max(600, h - 20);
+                    canvasW = canvasH * gridAspect;
+                } else {
+                    canvasW = Math.max(800, w - 20);
+                    canvasH = canvasW / gridAspect;
+                }
+                
+                this.canvas.width = Math.round(canvasW);
+                this.canvas.height = Math.round(canvasH);
+                this.canvas.style.width = `${this.canvas.width}px`;
+                this.canvas.style.height = `${this.canvas.height}px`;
+                
+                state.ui.canvasSize = { w: this.canvas.width, h: this.canvas.height };
+                state.ui.canvasOffset = this.canvas.getBoundingClientRect();
+            },
+            
+            render() {
+                if (!state.initialized || !this.ctx) return;
+                
+                const t1 = performance.now();
+                const { ctx } = this;
+                const { w, h } = state.ui.canvasSize;
+                
+                // Draw background image with cover algorithm (like CSS background-size: cover)
+                if (this.backgroundLoaded && this.backgroundImage) {
+                    const img = this.backgroundImage;
+                    const imgRatio = img.width / img.height;
+                    const canvasRatio = w / h;
+                    let renderWidth, renderHeight, offsetX, offsetY;
+
+                    // Cover canvas without distortion
+                    if (canvasRatio > imgRatio) {
+                        renderWidth = w;
+                        renderHeight = w / imgRatio;
+                    } else {
+                        renderHeight = h;
+                        renderWidth = h * imgRatio;
+                    }
+
+                    offsetX = (w - renderWidth) / 2;
+                    offsetY = (h - renderHeight) / 2;
+
+                    ctx.drawImage(img, offsetX, offsetY, renderWidth, renderHeight);
+
+                    // Add dark overlay for depth
+                    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+                    gradient.addColorStop(0, "rgba(2, 11, 25, 0.35)");
+                    gradient.addColorStop(1, "rgba(2, 11, 25, 0.55)");
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, w, h);
+                } else {
+                    // Fallback ocean gradient if image doesn't load
+                    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+                    gradient.addColorStop(0, "#87ceeb");
+                    gradient.addColorStop(1, "#1e5f74");
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, w, h);
+                }
+                
+                // Draw layers
+                this.drawMap(ctx, w, h);
+                this.drawSwell(ctx, w, h);
+                this.drawWind(ctx, w, h);
+                this.drawStorms(ctx, w, h);
+                this.drawOverlays(ctx, w, h);
+                
+                // FPS calculation
+                this.frameCount++;
+                if (t1 - this.lastRenderTime > 1000) {
+                    this.fps = this.frameCount;
+                    this.frameCount = 0;
+                    this.lastRenderTime = t1;
+                }
+                
+                state.ui.renderTime = performance.now() - t1;
+                this.updateDiagnostics();
+            },
+            
+            updateDiagnostics() {
+                const fpsEl = document.getElementById('diag_fps');
+                const updateEl = document.getElementById('diag_updateTime');
+                const renderEl = document.getElementById('diag_renderTime');
+                
+                if (fpsEl) fpsEl.textContent = this.fps;
+                if (updateEl) updateEl.textContent = state.ui.updateTime.toFixed(2);
+                if (renderEl) renderEl.textContent = state.ui.renderTime.toFixed(2);
+            },
+            
+            drawMap(ctx, w, h) {
+                // Background image is drawn in render() - no additional map overlays needed
+                // Land physics collision detection handled by staticGrid.isLand
+                // All geographic features visible in game-background.jpeg
+                return;
+            },
+
+            /**
+             * Draw swell propagation using radial glow rings
+             * Cleaner, more performant approach than ray tracing
+             */
+            drawSwell(ctx, w, h) {
+                const { gridWidth, gridHeight, storms } = state;
+                const cellW = w / gridWidth;
+                const cellH = h / gridHeight;
+
+                // Draw radial swell rings emanating from each storm
+                storms.forEach(storm => {
+                    const { i, j } = Utils.latLonToCell(storm.lat, storm.lon);
+                    const x = i * cellW;
+                    const y = j * cellH;
+
+                    const windKts = storm.wind || storm.Umax || 0;
+                    if (windKts < 15) return; // Skip weak storms
+
+                    // Draw multiple concentric rings
+                    const maxRadius = Math.min(w, h) * 0.4; // Max ring size
+                    const ringCount = 5; // Number of rings to draw
+
+                    for (let r = 0; r < ringCount; r++) {
+                        const radius = (maxRadius / ringCount) * (r + 1);
+                        const opacity = 0.4 - (r * 0.07); // Fade outer rings
+
+                        // Radial gradient for glow effect
+                        const gradient = ctx.createRadialGradient(x, y, radius * 0.7, x, y, radius);
+                        gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity * 0.3})`);
+                        gradient.addColorStop(1, `rgba(33, 150, 243, ${opacity * 0.1})`);
+
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(x, y, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                });
+            },
+            
+            drawWind(ctx, w, h) {
+                const { gridWidth, gridHeight, grid, staticGrid } = state;
+                const cellW = w / gridWidth;
+                const cellH = h / gridHeight;
+                const arrowSpacing = 15;
+                
+                for (let j = 0; j < gridHeight; j += arrowSpacing) {
+                    for (let i = 0; i < gridWidth; i += arrowSpacing) {
+                        const idx = j * gridWidth + i;
+                        if (staticGrid.isLand[idx] === 1) continue;
+                        
+                        const U = grid.windU[idx];
+                        const V = grid.windV[idx];
+                        const speed = Math.sqrt(U*U + V*V);
+                        
+                        if (speed < 5) continue;
+                        
+                        const x = (i + arrowSpacing/2) * cellW;
+                        const y = (j + arrowSpacing/2) * cellH;
+                        
+                        const speed_kts = speed / CONSTS.KT_TO_MPS;
+                        const speed_norm = Math.min(speed_kts / 80.0, 1.0);
+                        ctx.strokeStyle = `rgba(234, 179, 8, ${Utils.lerp(0.3, 0.9, speed_norm)})`;
+                        
+                        const theta = Math.atan2(V, U);
+                        const len = Math.min(speed_norm * 30, arrowSpacing * cellW * 0.8);
+                        this.drawArrow(ctx, x, y, theta, len, 1);
+                    }
+                }
+            },
+            
+            drawStorms(ctx, w, h) {
+                const { gridWidth, gridHeight, storms } = state;
+                const cellW = w / gridWidth;
+                const cellH = h / gridHeight;
+
+                storms.forEach(storm => {
+                    const { i, j } = Utils.latLonToCell(storm.lat, storm.lon);
+                    const x = i * cellW;
+                    const y = j * cellH;
+
+                    // Calculate visual radius based on storm radius in km
+                    const radiusKm = storm.radius || 500;
+                    const radiusPx = Math.min(50, (radiusKm / 500) * 30); // Scale to pixels
+
+                    // Draw outer dashed circle
+                    ctx.strokeStyle = storm.onLand ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.7)";
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([8, 6]); // Dashed pattern
+                    ctx.beginPath();
+                    ctx.arc(x, y, radiusPx, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]); // Reset
+
+                    // Draw center dot
+                    ctx.fillStyle = "#2196f3"; // Primary blue
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Draw direction arrow (if drift angle available)
+                    if (storm.driftAngle !== undefined) {
+                        ctx.strokeStyle = "white";
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        const arrowLength = 25;
+                        ctx.lineTo(
+                            x + Math.cos(storm.driftAngle) * arrowLength,
+                            y + Math.sin(storm.driftAngle) * arrowLength
+                        );
+                        ctx.stroke();
+                    }
+
+                    // Draw storm label
+                    ctx.fillStyle = "white";
+                    ctx.font = "600 13px 'Poppins', sans-serif";
+                    ctx.textAlign = "left";
+                    const stormLabel = storm.name || `Storm ${storm.id || 1}`;
+                    ctx.fillText(stormLabel, x + 15, y - 15);
+
+                    // Draw wind speed
+                    ctx.font = "500 11px 'Inter', sans-serif";
+                    ctx.fillStyle = "rgba(255,255,255,0.8)";
+                    const windKts = Math.round(storm.wind || storm.Umax || 0);
+                    ctx.fillText(`${windKts} kts`, x + 15, y - 2);
+                });
+            },
+
+            
+            drawOverlays(ctx, w, h) {
+                const { gridWidth, gridHeight, sites, ui } = state;
+                const cellW = w / gridWidth;
+                const cellH = h / gridHeight;
+                
+                // Sites
+                sites.forEach(site => {
+                    const x = site.x * cellW;
+                    const y = site.y * cellH;
+
+                    // White center dot
+                    ctx.fillStyle = "white";
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Coral outline
+                    ctx.strokeStyle = "#ff6b6b";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Site label
+                    ctx.fillStyle = "white";
+                    ctx.font = "600 11px 'Inter', sans-serif";
+                    ctx.textAlign = "left";
+                    ctx.fillText(site.name, x + 10, y - 6);
+                });
+
+                
+                // Measurement tool
+                const { active, p1, p2 } = ui.measurementTool;
+                if (active && p1) {
+                    ctx.strokeStyle = '#22c55e';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    const p_end = p2 || ui.mousePos;
+                    if (p_end) ctx.lineTo(p_end.x, p_end.y);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Info box
+                    if (p_end) {
+                        const { lat: lat1, lon: lon1 } = Utils.canvasToLatLon(p1.x, p1.y);
+                        const { lat: lat2, lon: lon2 } = Utils.canvasToLatLon(p_end.x, p_end.y);
+                        const dist_km = Utils.approxDistKm(lat1, lon1, lat2, lon2);
+                        const bearing = Utils.getBearing(lat1, lon1, lat2, lon2);
+                        
+                        const T_avg = 14;
+                        const cg_deep = (CONSTS.G * T_avg) / (4 * CONSTS.PI);
+                        const eta_h = (dist_km * 1000) / cg_deep / CONSTS.HOUR_TO_S;
+                        
+                        const boxX = p_end.x + 12;
+                        const boxY = p_end.y + 12;
+                        
+                        ctx.fillStyle = 'rgba(30, 30, 30, 0.85)';
+                        ctx.fillRect(boxX, boxY, 150, 70);
+                        ctx.fillStyle = '#22c55e';
+                        ctx.font = '13px monospace';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(`Dist: ${dist_km.toFixed(0)} km`, boxX + 6, boxY + 20);
+                        ctx.fillText(`Bearing: ${bearing.toFixed(0)}°`, boxX + 6, boxY + 38);
+                        ctx.fillText(`ETA (14s): ${eta_h.toFixed(1)} h`, boxX + 6, boxY + 56);
+                    }
+                }
+            },
+            
+            drawArrow(ctx, x, y, theta, len, lineWidth = 2) {
+                const headlen = Math.max(len / 3, 6);
+                const toX = x + len * Math.cos(theta);
+                const toY = y + len * Math.sin(theta);
+                
+                ctx.lineWidth = lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(toX, toY);
+                ctx.lineTo(toX - headlen * Math.cos(theta - CONSTS.PI/6), toY - headlen * Math.sin(theta - CONSTS.PI/6));
+                ctx.moveTo(toX, toY);
+                ctx.lineTo(toX - headlen * Math.cos(theta + CONSTS.PI/6), toY - headlen * Math.sin(theta + CONSTS.PI/6));
+                ctx.stroke();
+            }
+        };
+
+        // --- 6. UI CONTROLLER (Enhanced with keyboard support) ---
+        const UI = {
+            init() {
+                this.bindEventListeners();
+                this.updateAll();
+                // Note: Auto-show help modal moved to App.init() for proper timing
+            },
+            
+            bindEventListeners() {
+                // Controls
+                document.getElementById('playPauseButton').addEventListener('click', this.handlePlayPause.bind(this));
+                document.getElementById('stepButton').addEventListener('click', this.handleStep.bind(this));
+                document.getElementById('resetButton').addEventListener('click', this.handleReset.bind(this));
+                document.getElementById('timeSlider').addEventListener('input', this.handleTimeSlider.bind(this));
+                document.getElementById('seedInput').addEventListener('change', this.handleSeedChange.bind(this));
+                document.getElementById('setSeedButton').addEventListener('click', this.handleSeedChange.bind(this));
+                document.getElementById('measureToolButton').addEventListener('click', this.handleMeasureTool.bind(this));
+                document.getElementById('helpButton').addEventListener('click', () => UI.showModal('helpModal'));
+                document.getElementById('closeHelpButton').addEventListener('click', () => UI.hideModal('helpModal'));
+                
+                // Keyboard
+                document.addEventListener('keydown', (e) => {
+                    if (e.target.tagName === 'INPUT') return;
+                    
+                    switch(e.code) {
+                        case 'Space':
+                            e.preventDefault();
+                            this.handlePlayPause();
+                            break;
+                        case 'Escape':
+                            this.deactivateAllTools();
+                            break;
+                        case 'Delete':
+                        case 'Backspace':
+                            if (state.ui.selectedStormId !== null) {
+                                Sim.deleteStorm(state.ui.selectedStormId);
+                                this.updateAll();
+                            }
+                            break;
+                        case 'NumpadAdd':
+                        case 'Equal':
+                            this.adjustSpeed(1);
+                            break;
+                        case 'NumpadSubtract':
+                        case 'Minus':
+                            this.adjustSpeed(-1);
+                            break;
+                    }
+                });
+                
+                // Tabs
+                document.querySelector('.tab-bar').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('tab-button')) {
+                        this.handleTabClick(e.target.dataset.tab);
+                    }
+                });
+                
+                // Storms
+                document.getElementById('placeStormButton').addEventListener('click', this.handlePlaceStormToggle.bind(this));
+                document.getElementById('cloneStormButton').addEventListener('click', this.handleCloneStorm.bind(this));
+                document.getElementById('deleteStormButton').addEventListener('click', this.handleDeleteStorm.bind(this));
+                document.getElementById('stormList').addEventListener('click', this.handleStormListClick.bind(this));
+                document.getElementById('stormEditor').addEventListener('input', this.handleStormEditorInput.bind(this));
+                
+                // Environment
+                document.getElementById('bathyPreset').addEventListener('change', this.handleBathyChange.bind(this));
+                document.querySelectorAll('.physics-const').forEach(el => {
+                    el.addEventListener('change', this.handlePhysicsChange.bind(this));
+                });
+                document.getElementById('resetPhysicsButton').addEventListener('click', this.handlePhysicsReset.bind(this));
+                
+                // Scenarios
+                document.getElementById('scenarioList').addEventListener('click', this.handleScenarioLoad.bind(this));
+                
+                // Canvas
+                const canvas = Render.canvas;
+                canvas.addEventListener('mousedown', this.handleCanvasMouseDown.bind(this));
+                canvas.addEventListener('mousemove', this.handleCanvasMouseMove.bind(this));
+                canvas.addEventListener('mouseup', this.handleCanvasMouseUp.bind(this));
+                canvas.addEventListener('mouseleave', this.handleCanvasMouseLeave.bind(this));
+                canvas.addEventListener('touchstart', this.handleCanvasTouch.bind(this), { passive: false });
+                canvas.addEventListener('touchmove', this.handleCanvasTouch.bind(this), { passive: false });
+                canvas.addEventListener('touchend', this.handleCanvasTouchEnd.bind(this));
+            },
+            
+            adjustSpeed(delta) {
+                const slider = document.getElementById('timeSlider');
+                const newVal = Math.max(0, Math.min(10, parseInt(slider.value) + delta));
+                slider.value = newVal;
+                slider.dispatchEvent(new Event('input'));
+            },
+            
+            updateAll() {
+                this.updatePlayButton();
+                this.updateTimeDisplay();
+                this.updateSeedInput();
+                this.updateStormList();
+                this.updateStormEditor();
+                this.updateSiteTables();
+                this.updatePhysicsPanel();
+                this.updateScenarioList();
+                this.updateToolButtons();
+            },
+            
+            updatePlayButton() {
+                const btn = document.getElementById('playPauseButton');
+                btn.textContent = state.isRunning ? 'Pause' : 'Play';
+                btn.classList.toggle('active', state.isRunning);
+                btn.setAttribute('aria-pressed', state.isRunning);
+            },
+            
+            updateTimeDisplay() {
+                const display = document.getElementById('simTimeDisplay');
+                if (display) display.value = `T+ ${state.simTimeHours.toFixed(1)} h`;
+            },
+            
+            updateSeedInput() {
+                const input = document.getElementById('seedInput');
+                if (input) input.value = state.seedStr;
+            },
+            
+            updateToolButtons() {
+                document.getElementById('measureToolButton')?.classList.toggle('active', state.ui.measurementTool.active);
+                document.getElementById('placeStormButton')?.classList.toggle('active', state.ui.isPlacingStorm);
+                Render.canvas?.classList.toggle('placing-storm', state.ui.isPlacingStorm);
+            },
+            
+            updateStormList() {
+                const listEl = document.getElementById('stormList');
+                if (!listEl) return;
+                
+                listEl.innerHTML = '';
+                
+                if (state.storms.length === 0) {
+                    listEl.innerHTML = '<li class="empty">No storms active.</li>';
+                    return;
+                }
+                
+                state.storms.forEach(storm => {
+                    const li = document.createElement('li');
+                    li.dataset.id = storm.id;
+                    li.setAttribute('role', 'option');
+                    li.setAttribute('aria-selected', storm.id === state.ui.selectedStormId);
+                    li.textContent = `${storm.name} (${storm.wind}kt, ${storm.age.toFixed(0)}/${storm.lifetime}h)`;
+                    li.classList.toggle('selected', storm.id === state.ui.selectedStormId);
+                    listEl.appendChild(li);
+                });
+            },
+            
+            updateStormEditor() {
+                const editorEl = document.getElementById('stormEditor');
+                if (!editorEl) return;
+                
+                const storm = Sim.getStorm(state.ui.selectedStormId);
+                
+                if (!storm) {
+                    editorEl.style.display = 'none';
+                    return;
+                }
+                
+                editorEl.style.display = 'block';
+                document.getElementById('stormEditorTitle').textContent = `Edit: ${storm.name}`;
+                document.getElementById('stormName').value = storm.name;
+                document.getElementById('stormLat').value = storm.lat.toFixed(1);
+                document.getElementById('stormLon').value = storm.lon.toFixed(1);
+                document.getElementById('stormHeading').value = storm.heading.toFixed(0);
+                document.getElementById('stormSpeed').value = storm.speed.toFixed(0);
+                document.getElementById('stormWind').value = storm.wind.toFixed(0);
+                document.getElementById('stormRadius').value = storm.radius.toFixed(0);
+                document.getElementById('stormLifetime').value = storm.lifetime.toFixed(0);
+            },
+            
+            updateSiteTables() {
+                const peakBody = document.getElementById('sitePeakTableBody');
+                const currBody = document.getElementById('siteCurrentTableBody');
+                
+                if (!peakBody || !currBody) return;
+                
+                peakBody.innerHTML = '';
+                currBody.innerHTML = '';
+                
+                state.sites.forEach((site, idx) => {
+                    // Peak row
+                    const pr = document.createElement('tr');
+                    if (site.peak && site.peak.time !== undefined) {
+                        pr.innerHTML = `
+                            <td>${site.name.split(' ')[1]}</td>
+                            <td class="${site.peak.hs > 4 ? 'peak' : ''}">${site.peak.hs.toFixed(2)}</td>
+                            <td>${site.peak.tp.toFixed(1)}</td>
+                            <td>${site.peak.dir.toFixed(0)}</td>
+                            <td>${site.peak.time.toFixed(1)}</td>
+                        `;
+                    } else {
+                        pr.innerHTML = `<td>${site.name.split(' ')[1]}</td><td colspan="4">--</td>`;
+                    }
+                    peakBody.appendChild(pr);
+                    
+                    // Current row
+                    const cr = document.createElement('tr');
+                    if (site.current && site.current.hb !== undefined) {
+                        cr.innerHTML = `
+                            <td>${site.name.split(' ')[1]}</td>
+                            <td>${site.current.hs.toFixed(2)}</td>
+                            <td>${site.current.tp.toFixed(1)}</td>
+                            <td>${site.current.dir.toFixed(0)}</td>
+                            <td>${site.current.hb.toFixed(2)}</td>
+                        `;
+                    } else {
+                        cr.innerHTML = `<td>${site.name.split(' ')[1]}</td><td colspan="4">--</td>`;
+                    }
+                    currBody.appendChild(cr);
+                });
+            },
+            
+            updatePhysicsPanel() {
+                for (const key in state.physics) {
+                    const el = document.getElementById(`const_${key.toUpperCase()}`);
+                    if (el) el.value = state.physics[key];
+                }
+            },
+            
+            updateScenarioList() {
+                const listEl = document.getElementById('scenarioList');
+                if (!listEl) return;
+                
+                listEl.innerHTML = '';
+                state.scenarios.forEach(scen => {
+                    const card = document.createElement('div');
+                    card.className = 'scenario-card';
+                    card.setAttribute('role', 'listitem');
+                    card.innerHTML = `
+                        <h4>${scen.name}</h4>
+                        <p>${scen.desc}</p>
+                        <button class="panel-button btn-primary" data-id="${scen.id}">Load Scenario</button>
+                    `;
+                    listEl.appendChild(card);
+                });
+                
+                // Update current scenario display
+                const currentEl = document.getElementById('currentScenarioDisplay');
+                if (!currentEl) return;
+                
+                if (state.currentScenario) {
+                    const { name, desc, goals, isComplete } = state.currentScenario;
+                    let goalsHTML = '<ul>';
+                    goals.forEach(g => {
+                        const site = state.sites.find(s => s.name === g.site);
+                        const currentVal = site ? site.peak[g.key] : 0;
+                        const met = currentVal >= g.value;
+                        goalsHTML += `
+                            <li style="color: ${met ? 'var(--accent-green)' : 'var(--text-dim)'}">
+                                ${g.site}: ${g.key.toUpperCase()} &ge; ${g.value.toFixed(1)}
+                                (Peak: ${currentVal.toFixed(1)})
+                            </li>`;
+                    });
+                    goalsHTML += '</ul>';
+                    
+                    currentEl.innerHTML = `
+                        <h4>${name} ${isComplete ? '(<span style="color: var(--accent-green)">COMPLETE</span>)' : ''}</h4>
+                        <p>${desc}</p>
+                        ${goalsHTML}
+                    `;
+                } else {
+                    currentEl.innerHTML = '<p>No scenario loaded. Select one from the list above.</p>';
+                }
+            },
+            
+            deactivateAllTools() {
+                state.ui.measurementTool.active = false;
+                state.ui.isPlacingStorm = false;
+                state.ui.isDraggingStorm = false;
+                this.updateToolButtons();
+            },
+
+            // --- Event Handlers ---
+            handlePlayPause() {
+                state.isRunning = !state.isRunning;
+                this.updatePlayButton();
+            },
+            
+            handleStep() {
+                if (state.isRunning) {
+                    this.handlePlayPause(); // Pause first
+                }
+                Sim.step();
+                this.updateAll(); // Update UI after step
+            },
+            
+            handleReset() {
+                const seed = state.seedStr; // Preserve seed
+                Sim.init(seed);
+                this.updateAll();
+            },
+            
+            handleTimeSlider(e) {
+                const speedIndex = parseInt(e.target.value, 10);
+                state.simSpeed = speedIndex;
+                const speedMap = [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 10.0];
+                state.dtHours = speedMap[speedIndex];
+            },
+            
+            handleSeedChange() {
+                const newSeed = document.getElementById('seedInput').value;
+                Sim.init(newSeed);
+                this.updateAll();
+                Tests.runSelfChecks();
+            },
+            
+            handleMeasureTool() {
+                this.deactivateAllTools();
+                state.ui.measurementTool.active = true;
+                state.ui.measurementTool.p1 = null;
+                state.ui.measurementTool.p2 = null;
+                this.updateToolButtons();
+            },
+            
+            handlePlaceStormToggle() {
+                this.deactivateAllTools();
+                state.ui.isPlacingStorm = true;
+                this.updateToolButtons();
+            },
+            
+            handleTabClick(tabId) {
+                state.ui.activeTab = tabId;
+                document.querySelectorAll('.tab-content').forEach(el => {
+                    el.classList.toggle('active', el.id === tabId);
+                });
+                document.querySelectorAll('.tab-button').forEach(el => {
+                    el.classList.toggle('active', el.dataset.tab === tabId);
+                    el.setAttribute('aria-selected', el.dataset.tab === tabId);
+                });
+            },
+            
+            handleCloneStorm() {
+                const oldStorm = Sim.getStorm(state.ui.selectedStormId);
+                if (!oldStorm) return;
+                
+                const newStorm = Sim.addStorm(
+                    oldStorm.lat + 1, // Offset slightly
+                    oldStorm.lon + 1,
+                    oldStorm.speed, oldStorm.heading, oldStorm.wind,
+                    oldStorm.radius, oldStorm.lifetime,
+                    `${oldStorm.name} (Copy)`
+                );
+                state.ui.selectedStormId = newStorm.id;
+                this.updateStormList();
+                this.updateStormEditor();
+            },
+            
+            handleDeleteStorm() {
+                Sim.deleteStorm(state.ui.selectedStormId);
+                this.updateStormList();
+                this.updateStormEditor();
+            },
+            
+            handleStormListClick(e) {
+                const li = e.target.closest('li');
+                if (li && li.dataset.id) {
+                    state.ui.selectedStormId = parseInt(li.dataset.id, 10);
+                    this.updateStormList();
+                    this.updateStormEditor();
+                }
+            },
+            
+            handleStormEditorInput(e) {
+                const storm = Sim.getStorm(state.ui.selectedStormId);
+                if (!storm) return;
+                
+                const val = e.target.value;
+                switch(e.target.id) {
+                    case 'stormName': storm.name = val; this.updateStormList(); break;
+                    case 'stormLat': storm.lat = parseFloat(val); break;
+                    case 'stormLon': storm.lon = parseFloat(val); break;
+                    case 'stormHeading': storm.heading = parseFloat(val); break;
+                    case 'stormSpeed': storm.speed = parseFloat(val); break;
+                    case 'stormWind': storm.wind = parseFloat(val); break;
+                    case 'stormRadius': storm.radius = parseFloat(val); break;
+                    case 'stormLifetime': storm.lifetime = parseFloat(val); break;
+                }
+            },
+            
+            handleBathyChange(e) {
+                Sim.setBathyPreset(e.target.value);
+            },
+            
+            handlePhysicsChange(e) {
+                const key = e.target.id.replace('const_', '').toLowerCase();
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val) && state.physics.hasOwnProperty(key)) {
+                    state.physics[key] = val;
+                }
+            },
+handlePhysicsReset() {
+                state.physics = JSON.parse(JSON.stringify(CONSTS.DEFAULT_PHYSICS));
+                this.updatePhysicsPanel();
+            },
+            
+            handleScenarioLoad(e) {
+                if (e.target.dataset.id) {
+                    Sim.loadScenario(e.target.dataset.id);
+                    this.updateAll();
+                }
+            },
+            
+            getMousePos(e) {
+                // Ensure canvasOffset is fresh, especially after resizes
+                state.ui.canvasOffset = Render.canvas.getBoundingClientRect();
+                const rect = state.ui.canvasOffset;
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                state.ui.mousePos = { x, y };
+                return { x, y };
+            },
+            
+            handleCanvasMouseDown(e) {
+                const { x, y } = this.getMousePos(e);
+                const { i, j } = Utils.canvasToCell(x, y);
+                const { lat, lon } = Utils.cellToLatLon(i, j);
+                
+                if (state.ui.measurementTool.active) {
+                    const tool = state.ui.measurementTool;
+                    if (!tool.p1) tool.p1 = { x, y };
+                    else if (!tool.p2) tool.p2 = { x, y };
+                    else { tool.p1 = { x, y }; tool.p2 = null; }
+                    return;
+                }
+                
+                if (state.ui.isPlacingStorm) {
+                    if (Utils.isPointInLand(lat, lon)) return; // Don't place on land
+                    const newStorm = Sim.addStorm(lat, lon);
+                    state.ui.selectedStormId = newStorm.id;
+                    this.deactivateAllTools();
+                    this.updateAll();
+                    return;
+                }
+                
+                // Check for storm drag
+                const storm = this.getStormAt(x, y);
+                if (storm) {
+                    state.ui.selectedStormId = storm.id;
+                    state.ui.isDraggingStorm = true;
+                    this.updateAll();
+                } else {
+                    state.ui.selectedStormId = null;
+                    this.updateAll();
+                }
+            },
+            
+            handleCanvasMouseMove(e) {
+                const { x, y } = this.getMousePos(e);
+                if (state.ui.isDraggingStorm && state.ui.selectedStormId !== null) {
+                    const storm = Sim.getStorm(state.ui.selectedStormId);
+                    if (storm) {
+                        const { lat, lon } = Utils.canvasToLatLon(x, y);
+                        if (!Utils.isPointInLand(lat, lon)) {
+                            storm.lat = lat;
+                            storm.lon = lon;
+                            this.updateStormEditor();
+                        }
+                    }
+                }
+            },
+            
+            handleCanvasMouseUp() {
+                state.ui.isDraggingStorm = false;
+            },
+            
+            handleCanvasMouseLeave() {
+                state.ui.isDraggingStorm = false;
+                state.ui.mousePos = null;
+            },
+            
+            handleCanvasTouch(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                if (e.type === 'touchstart') {
+                    this.handleCanvasMouseDown(touch);
+                } else if (e.type === 'touchmove') {
+                    this.handleCanvasMouseMove(touch);
+                }
+            },
+            
+            handleCanvasTouchEnd(e) {
+                e.preventDefault();
+                this.handleCanvasMouseUp();
+            },
+            
+            getStormAt(x, y) {
+                const { gridWidth, gridHeight, storms } = state;
+                const { w, h } = state.ui.canvasSize;
+                const cellW = w / gridWidth;
+                const cellH = h / gridHeight;
+                const CLICK_RADIUS_PX = 10;
+                
+                return storms.find(storm => {
+                    const { i, j } = Utils.latLonToCell(storm.lat, storm.lon);
+                    const sx = i * cellW;
+                    const sy = j * cellH;
+                    const dist_sq = (x - sx)**2 + (y - sy)**2;
+                    return dist_sq < (CLICK_RADIUS_PX * CLICK_RADIUS_PX);
+            });
+            },
+            
+            showModal(id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.style.display = 'flex';
+            },
+            
+            hideModal(id) {
+                const modal = document.getElementById(id);
+                if (modal) modal.style.display = 'none';
+            }
+        };
+
+        // --- 7. UTILITY FUNCTIONS ---
+        const Utils = {
+            lerp: (a, b, t) => a + (b - a) * t,
+            clamp: (v, min, max) => Math.max(min, Math.min(max, v)),
+            degToRad: (d) => d * CONSTS.PI / 180,
+            radToDeg: (r) => r * 180 / CONSTS.PI,
+            bearingToRad: (b) => Utils.degToRad(b),
+            radToBearing: (r) => (Utils.radToDeg(r) + 360) % 360,
+            
+            getBearing(lat1, lon1, lat2, lon2) {
+                const [lat1_rad, lon1_rad, lat2_rad, lon2_rad] = [lat1, lon1, lat2, lon2].map(Utils.degToRad);
+                const dLon = lon2_rad - lon1_rad;
+                const y = Math.sin(dLon) * Math.cos(lat2_rad);
+                const x = Math.cos(lat1_rad) * Math.sin(lat2_rad) - Math.sin(lat1_rad) * Math.cos(lat2_rad) * Math.cos(dLon);
+                return (Utils.radToDeg(Math.atan2(y, x)) + 360) % 360;
+            },
+            
+            moveLatLon(lat, lon, bearing_rad, dist_km) {
+                const R_km = 6371;
+                const d_R = dist_km / R_km;
+                const lat_rad = Utils.degToRad(lat);
+                const lon_rad = Utils.degToRad(lon);
+                
+                const lat_new_rad = Math.asin(Math.sin(lat_rad) * Math.cos(d_R) + Math.cos(lat_rad) * Math.sin(d_R) * Math.sin(bearing_rad));
+                const lon_new_rad = lon_rad + Math.atan2(Math.cos(bearing_rad) * Math.sin(d_R) * Math.cos(lat_rad), Math.cos(d_R) - Math.sin(lat_rad) * Math.sin(lat_new_rad));
+                
+                return { lat: Utils.radToDeg(lat_new_rad), lon: Utils.radToDeg(lon_new_rad) };
+            },
+            
+            approxDistKm(lat1, lon1, lat2, lon2) {
+                const R = 6371;
+                const [lat1_rad, lon1_rad, lat2_rad, lon2_rad] = [lat1, lon1, lat2, lon2].map(Utils.degToRad);
+                const dLat = lat2_rad - lat1_rad;
+                const dLon = lon2_rad - lon1_rad;
+                const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(lat1_rad) * Math.cos(lat2_rad) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return R * c;
+            },
+            
+            latLonToCell(lat, lon) {
+                const i_norm = (lon - CONSTS.MAP_LON_EAST_EDGE) / (CONSTS.MAP_LON_WEST_EDGE - CONSTS.MAP_LON_EAST_EDGE);
+                const j_norm = (lat - CONSTS.MAP_LAT_MIN) / (CONSTS.MAP_LAT_MAX - CONSTS.MAP_LAT_MIN);
+                return { i: i_norm * state.gridWidth, j: j_norm * state.gridHeight };
+            },
+            
+            cellToLatLon(i, j) {
+                const i_norm = i / state.gridWidth;
+                const j_norm = j / state.gridHeight;
+                const lon = Utils.lerp(CONSTS.MAP_LON_EAST_EDGE, CONSTS.MAP_LON_WEST_EDGE, i_norm);
+                const lat = Utils.lerp(CONSTS.MAP_LAT_MIN, CONSTS.MAP_LAT_MAX, j_norm);
+                return { lat, lon };
+            },
+            
+            canvasToCell(x, y) {
+                const { w, h } = state.ui.canvasSize;
+                const i = (x / w) * state.gridWidth;
+                const j = (y / h) * state.gridHeight;
+                return { i, j };
+            },
+            
+            cellToCanvas(i, j) {
+                const { w, h } = state.ui.canvasSize;
+                const x = (i / state.gridWidth) * w;
+                const y = (j / state.gridHeight) * h;
+                return { x, y };
+            },
+            
+            canvasToLatLon(x, y) {
+                const { i, j } = this.canvasToCell(x, y);
+                return this.cellToLatLon(i, j);
+            },
+            
+            bilerp(grid, i, j, w, h, defaultVal = 0) {
+                const i0 = Math.floor(i), i1 = i0 + 1;
+                const j0 = Math.floor(j), j1 = j0 + 1;
+                
+                if (i0 < 0 || i1 >= w || j0 < 0 || j1 >= h) return defaultVal;
+                
+                const idx00 = j0 * w + i0;
+                const idx10 = j0 * w + i1;
+                const idx01 = j1 * w + i0;
+                const idx11 = j1 * w + i1;
+                
+                const v00 = (state.staticGrid.isLand[idx00] === 1) ? defaultVal : grid[idx00];
+                const v10 = (state.staticGrid.isLand[idx10] === 1) ? defaultVal : grid[idx10];
+                const v01 = (state.staticGrid.isLand[idx01] === 1) ? defaultVal : grid[idx01];
+                const v11 = (state.staticGrid.isLand[idx11] === 1) ? defaultVal : grid[idx11];
+                
+                const tx = i - i0, ty = j - j0;
+                const r0 = Utils.lerp(v00, v10, tx);
+                const r1 = Utils.lerp(v01, v11, tx);
+                return Utils.lerp(r0, r1, ty);
+            },
+            
+            bilerpAngle(grid, i, j, w, h) {
+                const i0 = Math.floor(i), i1 = i0 + 1;
+                const j0 = Math.floor(j), j1 = j0 + 1;
+                
+                if (i0 < 0 || i1 >= w || j0 < 0 || j1 >= h) return 0;
+                
+                const v00 = grid[j0 * w + i0];
+                const v10 = grid[j0 * w + i1];
+                const v01 = grid[j1 * w + i0];
+                const v11 = grid[j1 * w + i1];
+                
+                const tx = i - i0, ty = j - j0;
+                const r0 = Utils.angularLerp(v00, v10, tx);
+                const r1 = Utils.angularLerp(v01, v11, tx);
+                return Utils.angularLerp(r0, r1, ty);
+            },
+            
+            angularLerp(a, b, t) {
+                let d = b - a;
+                if (d > CONSTS.PI) d -= 2 * CONSTS.PI;
+                if (d < -CONSTS.PI) d += 2 * CONSTS.PI;
+                return a + d * t;
+            },
+            
+            isPointInLand(lat, lon) {
+                for (const landName in CONSTS.LAND_POLYGONS) {
+                    const poly = CONSTS.LAND_POLYGONS[landName];
+                    let inside = false;
+                    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                        const [lat_i, lon_i] = poly[i];
+                        const [lat_j, lon_j] = poly[j];
+                        
+                        const intersect = ((lat_i > lat) !== (lat_j > lat)) &&
+                            (lon < (lon_j - lon_i) * (lat - lat_i) / (lat_j - lat_i) + lon_i);
+                        if (intersect) inside = !inside;
+                    }
+                    if (inside) return true;
+                }
+                return false;
+            }
+        };
+
+        // --- 8. SELF-CHECKS ---
+        const Tests = {
+            runSelfChecks() {
+                const outEl = document.getElementById('selfCheckResults');
+                if (!outEl) return;
+                
+                let output = `Running tests with seed: ${state.seedStr}\n\n`;
+                const results = [];
+                
+                results.push(this.testRNG());
+                results.push(this.testCoordConversion());
+                results.push(this.testStorms());
+                results.push(this.testGridState());
+                
+                results.forEach(r => {
+                    output += `[${r.pass ? '<span class="pass">PASS</span>' : '<span class="fail">FAIL</span>'}] ${r.name}\n`;
+                    if (r.msg) output += `   -> ${r.msg}\n`;
+                });
+                
+                const allPass = results.every(r => r.pass);
+                output += `\nOverall: ${allPass ? '<span class="pass">All checks passed!</span>' : '<span class="fail">One or more checks failed.</span>'}`;
+                outEl.innerHTML = output;
+            },
+            
+            test(name, fn) {
+                try {
+                    const msg = fn();
+                    return { name, pass: true, msg: msg || 'OK' };
+                } catch (e) {
+                    console.error(`Test failed: ${name}`, e);
+                    return { name, pass: false, msg: e.message };
+                }
+            },
+            
+            testRNG() {
+                return this.test("PRNG", () => {
+                    const r1 = state.rng.random();
+                    const r2 = state.rng.random();
+                    if (r1 < 0 || r1 > 1 || r2 < 0 || r2 > 1) throw new Error(`Out of range: ${r1}, ${r2}`);
+                    if (r1 === r2) throw new Error(`Not random: ${r1}, ${r2}`);
+                    return `Values: ${r1.toFixed(3)}, ${r2.toFixed(3)}`;
+                });
+            },
+            
+            testCoordConversion() {
+                return this.test("Coord Conversion", () => {
+                    const p = { lat: 21.5, lon: 202.2 }; // O'ahu
+                    const { i, j } = Utils.latLonToCell(p.lat, p.lon);
+                    const { lat, lon } = Utils.cellToLatLon(i, j);
+                    const err = Utils.approxDistKm(p.lat, p.lon, lat, lon);
+                    if (err > 1) throw new Error(`High round-trip error: ${err.toFixed(1)} km`);
+                    return `O'ahu -> [${i.toFixed(1)}, ${j.toFixed(1)}] -> O'ahu. Error: ${err.toFixed(3)} km`;
+                });
+            },
+            
+            testStorms() {
+                return this.test("Storm Manager", () => {
+                    const s = Sim.addStorm(40, 190, 20, 120, 50, 200, 72, 'TestStorm');
+                    if (state.storms.length === 0) throw new Error('Storm not added');
+                    Sim.deleteStorm(s.id);
+                    if (state.storms.length > 0) throw new Error('Storm not deleted');
+                    return 'Add/Delete OK';
+                });
+            },
+            
+            testGridState() {
+                return this.test("Grid State", () => {
+                    const size = state.grid.hs.length;
+                    if (size !== state.gridWidth * state.gridHeight) throw new Error('Grid size mismatch');
+                    if (isNaN(state.grid.hs[100])) throw new Error('Grid contains NaN');
+                    return `Arrays initialized (${size} cells). OK.`;
+                });
+            }
+        };
+
+        // --- 9. MAIN LOOP ---
+        const MainLoop = {
+            lastStepTime: 0,
+            
+            run(timestamp) {
+                if (state.isRunning) {
+                    const elapsed = timestamp - this.lastStepTime;
+                    // 1000ms -> 10ms (1fps -> 100fps)
+                    const speedMap = [1000, 800, 500, 300, 200, 100, 66, 50, 33, 20, 10]; // ms per step
+                    const targetDelay = speedMap[state.simSpeed];
+                    
+                    if (elapsed > targetDelay) {
+                        Sim.step();
+                        UI.updateTimeDisplay();
+                        UI.updateSiteTables();
+                        UI.updateScenarioList();
+                        this.lastStepTime = timestamp;
+                    }
+                }
+                
+                Render.render();
+                window.requestAnimationFrame(this.run.bind(this));
+            }
+        };
+
+        // --- 10. APP INITIALIZATION ---
+        const App = {
+            async init() {
+                try {
+                    const canvas = document.getElementById('simCanvas');
+                    if (!canvas) throw new Error('Canvas element #simCanvas not found');
+                    
+                    // 1. Init Sim
+                    const initialSeed = document.getElementById('seedInput').value || 'oahu-swell-init';
+                    Sim.init(initialSeed);
+                    
+                    // 2. Load Sprites FIRST (before rendering)
+                    console.log('🌊 Loading sprites...');
+                    try {
+                        await SpriteLoader.loadAll();
+                        // Make sprites available globally to Render module
+                        window.sprites = SpriteLoader;
+                        console.log('u2713 All sprites loaded and ready');
+                    } catch (spriteError) {
+                        console.warn('u26a0ufe0f Sprites failed to load, continuing with basic rendering', spriteError);
+                    }
+
+                    // 3. Init Renderer (after sprites are loaded)
+                    Render.init(canvas);
+
+                    // 3b. Load Background Image
+                    console.log('🌊 Loading background image...');
+                    try {
+                        await Render.loadBackgroundImage();
+                        console.log('✓ Background image loaded');
+                    } catch (bgError) {
+                        console.warn('⚠️ Background image failed to load, using fallback', bgError);
+                    }
+
+                    
+                    // 4. Init UI
+                    UI.init();
+                    
+                    // 5. Run tests
+                    Tests.runSelfChecks();
+                    
+                    // 6. Start Loop
+                    window.requestAnimationFrame(MainLoop.run.bind(MainLoop));
+                    
+                    console.log("✓ North Shore Swell Lab initialized.");
+
+                    // 7. Show help modal after everything is initialized
+                    setTimeout(() => {
+                        if (document.getElementById('helpModal')) {
+                            UI.showModal('helpModal');
+                            console.log("✓ Help modal displayed");
+                        } else {
+                            console.warn("⚠️ Help modal element not found");
+                        }
+                    }, 1000);
+                } catch (error) {
+                    console.error("Fatal initialization error:", error);
+                    document.body.innerHTML = `<div style="color:red; padding:20px;">
+                        <h2>Initialization Failed</h2><pre>${error.stack}</pre>
+                    </div>`;
+                }
+            }
+        };
+        
+        // DOM is ready, start the app
+        document.addEventListener('DOMContentLoaded', () => App.init());
+        
+    </script>
+
+</body>
+</html>

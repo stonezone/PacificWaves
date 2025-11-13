@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacificWaves - Improved UI Layout Example</title>
+
+    <!-- Include base styles from waves.html -->
+    <link rel="stylesheet" href="css/improved-layout.css">
+
+    <style>
+        /* Demo styling to show the layout structure */
+        :root {
+            --bg-deep: #0a0f14;
+            --bg-main: #111827;
+            --bg-panel: #1f2937;
+            --bg-header: #374151;
+            --bg-control: #4b5563;
+            --text-light: #f3f4f6;
+            --text-dim: #9ca3af;
+            --text-heading: #e5e7eb;
+            --border-color: #4b5563;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --font-family: system-ui, -apple-system, sans-serif;
+            --font-family-mono: 'SF Mono', Consolas, monospace;
+            --transition-fast: 0.15s ease-out;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-main);
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .demo-canvas {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-deep);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Top Status Bar -->
+            <div class="sim-status-bar">
+                <div class="status-item">
+                    <div class="status-item-label">Simulation Time</div>
+                    <div class="status-item-value">T+ 24.5 h</div>
+                </div>
+
+                <div class="status-divider"></div>
+
+                <div class="status-item">
+                    <div class="status-item-label">Speed</div>
+                    <div class="status-item-value">1.5x</div>
+                </div>
+
+                <div class="status-divider"></div>
+
+                <div class="status-item">
+                    <div class="status-item-label">Active Storms</div>
+                    <div class="status-item-value">2</div>
+                </div>
+
+                <div class="status-divider"></div>
+
+                <div class="status-item">
+                    <div class="status-item-label">FPS</div>
+                    <div class="status-item-value">60</div>
+                </div>
+
+                <div style="margin-left: auto; display: flex; gap: 8px;">
+                    <button class="btn-enhanced btn-primary" style="padding: 8px 16px;">
+                        ▶ Play
+                    </button>
+                    <button class="btn-enhanced" style="padding: 8px 16px;">
+                        ⏭ Step
+                    </button>
+                    <button class="btn-enhanced" style="padding: 8px 16px;">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div style="flex: 1; position: relative; background: var(--bg-deep);">
+                <div class="demo-canvas">
+                    SIMULATION CANVAS
+                    <br>
+                    (Pacific Ocean Map with Storms & Swells)
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Enhanced Side Panel -->
+        <aside class="side-panel">
+
+            <!-- Tab Navigation -->
+            <div class="tab-bar">
+                <button class="tab-button active">
+                    Storms <span class="badge">2</span>
+                </button>
+                <button class="tab-button">
+                    Sites
+                </button>
+                <button class="tab-button">
+                    Env
+                </button>
+                <button class="tab-button">
+                    Scenarios
+                </button>
+                <button class="tab-button">
+                    Diag
+                </button>
+            </div>
+
+            <!-- Panel Content -->
+            <div class="panel-content-container">
+
+                <div class="tab-content active">
+
+                    <!-- Section Header -->
+                    <div class="section-header">
+                        <h3>Storm Manager</h3>
+                        <span class="badge">2 Active</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="button-group-enhanced">
+                        <button class="btn-enhanced btn-primary">
+                            <span class="icon">➕</span>
+                            Place Storm
+                        </button>
+                        <button class="btn-enhanced">
+                            <span class="icon">📋</span>
+                            Clone
+                        </button>
+                        <button class="btn-enhanced btn-danger">
+                            <span class="icon">🗑️</span>
+                            Delete
+                        </button>
+                    </div>
+
+                    <!-- Storm Card 1 -->
+                    <div class="storm-card selected">
+                        <div class="storm-card-header">
+                            <h4 class="storm-name">Aleutian Low #1</h4>
+                            <div class="storm-status active">
+                                <span class="storm-status-dot"></span>
+                                Active
+                            </div>
+                        </div>
+
+                        <div class="storm-stats">
+                            <div class="storm-stat">
+                                <div class="storm-stat-label">Wind Speed</div>
+                                <div class="storm-stat-value">
+                                    45 <span class="unit">kts</span>
+                                </div>
+                            </div>
+
+                            <div class="storm-stat">
+                                <div class="storm-stat-label">Position</div>
+                                <div class="storm-stat-value">
+                                    45°N 180°W
+                                </div>
+                            </div>
+
+                            <div class="storm-stat">
+                                <div class="storm-stat-label">Direction</div>
+                                <div class="storm-stat-value">
+                                    SE <span class="unit">(135°)</span>
+                                </div>
+                            </div>
+
+                            <div class="storm-stat">
+                                <div class="storm-stat-label">Radius</div>
+                                <div class="storm-stat-value">
+                                    300 <span class="unit">nm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="storm-card-actions">
+                            <button class="storm-action-btn">✏️ Edit</button>
+                            <button class="storm-action-btn">📍 Locate</button>
+                            <button class="storm-action-btn">📋 Clone</button>
+                        </div>
+                    </div>
+
+                    <!-- Storm Card 2 -->
+                    <div class="storm-card">
+                        <div class="storm-card-header">
+                            <h4 class="storm-name">Gulf of Alaska #2</h4>
+                            <div class="storm-status active">
+                                <span class="storm-status-dot"></span>
+                                Active
+                            </div>
+                        </div>
+
+                        <div class="storm-stats">
+                            <div class="storm-stat">
+                                <div class="storm-stat-label">Wind Speed</div>
+                                <div class="storm-stat-value">
+                                    38 <span class="unit">kts</span>
+                                </div>
+                            </div>
+
+                            <div class="storm-stat">
+                                <div class="storm-stat-label">Position</div>
+                                <div class="storm-stat-value">
+                                    52°N 145°W
+                                </div>
+                            </div>
+
+                            <div class="storm-stat">
+                                <div class="storm-stat-label">Direction</div>
+                                <div class="storm-stat-value">
+                                    E <span class="unit">(90°)</span>
+                                </div>
+                            </div>
+
+                            <div class="storm-stat">
+                                <div class="storm-stat-label">Radius</div>
+                                <div class="storm-stat-value">
+                                    250 <span class="unit">nm</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="storm-card-actions">
+                            <button class="storm-action-btn">✏️ Edit</button>
+                            <button class="storm-action-btn">📍 Locate</button>
+                            <button class="storm-action-btn">📋 Clone</button>
+                        </div>
+                    </div>
+
+                    <!-- Storm Editor Panel -->
+                    <div class="section-subheader" style="margin-top: 32px;">
+                        Edit Selected Storm
+                    </div>
+
+                    <div class="info-card">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-dim); font-weight: 600;">
+                                Storm Name
+                            </label>
+                            <input type="text" value="Aleutian Low #1"
+                                   style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-light); font-size: 14px;">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-dim); font-weight: 600;">
+                                    Latitude (°N)
+                                </label>
+                                <input type="number" value="45.0" step="0.5"
+                                       style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-light); font-size: 14px; font-family: var(--font-family-mono);">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-dim); font-weight: 600;">
+                                    Longitude (°E)
+                                </label>
+                                <input type="number" value="180.0" step="0.5"
+                                       style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-light); font-size: 14px; font-family: var(--font-family-mono);">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-dim); font-weight: 600;">
+                                    Max Wind (kts)
+                                </label>
+                                <input type="number" value="45" step="5"
+                                       style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-light); font-size: 14px; font-family: var(--font-family-mono);">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-dim); font-weight: 600;">
+                                    Gale Radius (nm)
+                                </label>
+                                <input type="number" value="300" step="10"
+                                       style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-light); font-size: 14px; font-family: var(--font-family-mono);">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-dim); font-weight: 600;">
+                                    Heading (°)
+                                </label>
+                                <input type="number" value="135" step="5"
+                                       style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-light); font-size: 14px; font-family: var(--font-family-mono);">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-dim); font-weight: 600;">
+                                    Speed (kts)
+                                </label>
+                                <input type="number" value="15" step="1"
+                                       style="width: 100%; padding: 10px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-light); font-size: 14px; font-family: var(--font-family-mono);">
+                            </div>
+                        </div>
+
+                        <button class="btn-enhanced btn-primary" style="width: 100%; margin-top: 16px;">
+                            Apply Changes
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</body>
+</html>

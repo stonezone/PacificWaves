@@ -1,0 +1,565 @@
+/* ============================================
+   OCEAN & SKY THEME
+   Clean, Modern Cartographic Style
+   Inspired by StormMaker's UI Design
+   ============================================ */
+
+:root {
+    /* Ocean/Sky Color Palette */
+    --color-ocean-base: #87ceeb;
+    --color-ocean-deep: #1e5f74;
+    --color-ocean-light: #a8daeb;
+    --color-sky-light: #e0f4ff;
+    --color-panel-bg: #e8f4f8;
+    --color-panel-bg-alt: #f5f9fb;
+    --color-border: #b0bec5;
+    --color-border-light: #cfd8dc;
+
+    /* Text Colors */
+    --color-text-main: #2c3e50;
+    --color-text-muted: #6b7280;
+    --color-text-label: #546e7a;
+    --color-text-inverse: #ffffff;
+
+    /* Action Colors */
+    --color-primary: #2196f3;
+    --color-primary-hover: #1976d2;
+    --color-success: #4caf50;
+    --color-success-hover: #43a047;
+    --color-warning: #ff9800;
+    --color-warning-hover: #f57c00;
+    --color-danger: #f44336;
+    --color-danger-hover: #e53935;
+
+    /* Accent Colors */
+    --color-accent-teal: #00bcd4;
+    --color-accent-coral: #ff6b6b;
+    --color-accent-amber: #ffc107;
+
+    /* Typography */
+    --font-heading: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-body: "Inter", "Open Sans", system-ui, -apple-system, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-button: 10px;
+    --radius-card: 14px;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 18px rgba(0, 0, 0, 0.18);
+    --shadow-button: 0 6px 14px rgba(0, 0, 0, 0.15);
+    --shadow-focus: 0 0 0 3px rgba(33, 150, 243, 0.25);
+
+    /* Transitions */
+    --transition-fast: 120ms ease;
+    --transition-standard: 200ms ease;
+}
+
+/* ============================================
+   GLOBAL OVERRIDES
+   ============================================ */
+
+body {
+    background: linear-gradient(135deg, var(--color-sky-light) 0%, var(--color-ocean-light) 100%) !important;
+    color: var(--color-text-main) !important;
+    font-family: var(--font-body) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+#container,
+.app-container {
+    background: linear-gradient(135deg, var(--color-sky-light) 0%, var(--color-ocean-light) 100%) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    position: relative !important;
+}
+
+/* ============================================
+   HEADER - CLEAN TITLE BAR
+   ============================================ */
+
+header {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid var(--color-border-light) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 16px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+header h1 {
+    color: var(--color-ocean-deep) !important;
+    font-family: var(--font-heading) !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.5px !important;
+    margin: 0 !important;
+    text-shadow: none !important;
+}
+
+header .subtitle {
+    color: var(--color-text-muted) !important;
+    font-family: var(--font-body) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.3px !important;
+    margin-top: 4px !important;
+}
+
+/* ============================================
+   CANVAS - CLEAN DISPLAY
+   ============================================ */
+
+#gameCanvas,
+#simCanvas {
+    border: 2px solid var(--color-border) !important;
+    box-shadow: var(--shadow-md) !important;
+    cursor: crosshair !important;
+    background-color: var(--color-ocean-base) !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+.sim-canvas-container {
+    background: linear-gradient(180deg, var(--color-sky-light) 0%, var(--color-ocean-light) 100%) !important;
+}
+
+/* ============================================
+   CONTROL PANELS - CARD STYLE
+   ============================================ */
+
+#leftPanel,
+#rightPanel {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid var(--color-border-light) !important;
+    box-shadow: var(--shadow-md) !important;
+    padding: 20px !important;
+    border-radius: var(--radius-card) !important;
+}
+
+#leftPanel {
+    border-right: 1px solid var(--color-border-light) !important;
+}
+
+#rightPanel {
+    border-left: 1px solid var(--color-border-light) !important;
+}
+
+/* ============================================
+   SECTION HEADERS
+   ============================================ */
+
+.control-section h3,
+.panel-header {
+    background: transparent !important;
+    border-left: 4px solid var(--color-primary) !important;
+    color: var(--color-ocean-deep) !important;
+    font-family: var(--font-heading) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.2px !important;
+    margin: 20px 0 12px 0 !important;
+    padding: 8px 0 8px 12px !important;
+    text-shadow: none !important;
+}
+
+/* ============================================
+   MODERN GRADIENT BUTTONS
+   ============================================ */
+
+button {
+    border: none !important;
+    border-radius: var(--radius-button) !important;
+    padding: 10px 20px !important;
+    font-family: var(--font-body) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--color-text-inverse) !important;
+    cursor: pointer !important;
+    box-shadow: var(--shadow-button) !important;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast) !important;
+    text-transform: none !important;
+    letter-spacing: 0.2px !important;
+    text-shadow: none !important;
+    position: relative !important;
+    background: linear-gradient(135deg, var(--color-primary), #1e88e5) !important;
+}
+
+button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22) !important;
+}
+
+button:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+button:focus {
+    outline: none !important;
+    box-shadow: var(--shadow-button), var(--shadow-focus) !important;
+}
+
+/* ============================================
+   PLAY/PAUSE - SUCCESS GREEN
+   ============================================ */
+
+#playPauseButton {
+    background: linear-gradient(135deg, var(--color-success), #54d87b) !important;
+    font-size: 16px !important;
+    padding: 14px 32px !important;
+    font-weight: 700 !important;
+}
+
+#playPauseButton:hover {
+    background: linear-gradient(135deg, var(--color-success-hover), #4cca73) !important;
+}
+
+/* ============================================
+   STEP - PRIMARY BLUE
+   ============================================ */
+
+#stepButton {
+    background: linear-gradient(135deg, var(--color-primary), #1e88e5) !important;
+}
+
+#stepButton:hover {
+    background: linear-gradient(135deg, var(--color-primary-hover), #1565c0) !important;
+}
+
+/* ============================================
+   RESET - WARNING ORANGE
+   ============================================ */
+
+#resetButton {
+    background: linear-gradient(135deg, var(--color-warning), #fb8c00) !important;
+}
+
+#resetButton:hover {
+    background: linear-gradient(135deg, var(--color-warning-hover), #ef6c00) !important;
+}
+
+/* ============================================
+   CLEAR STORMS - DANGER RED
+   ============================================ */
+
+#clearStormsButton {
+    background: linear-gradient(135deg, var(--color-danger), #ef5350) !important;
+}
+
+#clearStormsButton:hover {
+    background: linear-gradient(135deg, var(--color-danger-hover), #d32f2f) !important;
+}
+
+/* ============================================
+   SLIDERS & INPUTS - CLEAN MODERN STYLE
+   ============================================ */
+
+input[type="range"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: var(--color-border-light) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    height: 6px !important;
+    outline: none !important;
+    transition: background var(--transition-standard) !important;
+}
+
+input[type="range"]:hover {
+    background: var(--color-border) !important;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: linear-gradient(135deg, var(--color-primary), #1e88e5) !important;
+    border: 3px solid white !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4) !important;
+    cursor: pointer !important;
+    height: 22px !important;
+    width: 22px !important;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 3px 12px rgba(33, 150, 243, 0.6) !important;
+}
+
+input[type="range"]::-moz-range-thumb {
+    background: linear-gradient(135deg, var(--color-primary), #1e88e5) !important;
+    border: 3px solid white !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4) !important;
+    cursor: pointer !important;
+    height: 22px !important;
+    width: 22px !important;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 3px 12px rgba(33, 150, 243, 0.6) !important;
+}
+
+input[type="number"],
+select {
+    background: white !important;
+    border: 2px solid var(--color-border-light) !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-sm) !important;
+    color: var(--color-text-main) !important;
+    font-family: var(--font-body) !important;
+    font-size: 14px !important;
+    padding: 10px 14px !important;
+    transition: border-color var(--transition-standard), box-shadow var(--transition-standard) !important;
+}
+
+input[type="number"]:focus,
+select:focus {
+    border-color: var(--color-primary) !important;
+    box-shadow: var(--shadow-focus) !important;
+    outline: none !important;
+}
+
+input[type="number"]:hover,
+select:hover {
+    border-color: var(--color-border) !important;
+}
+
+/* ============================================
+   LABELS & TEXT
+   ============================================ */
+
+label {
+    color: var(--color-text-label) !important;
+    font-family: var(--font-body) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.3px !important;
+    text-transform: none !important;
+}
+
+.value-display {
+    color: var(--color-ocean-deep) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    text-shadow: none !important;
+}
+
+/* ============================================
+   CONTROL BAR
+   ============================================ */
+
+.control-bar {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border-top: 1px solid var(--color-border-light) !important;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ============================================
+   STATUS INDICATORS - SUBTLE PULSE
+   ============================================ */
+
+.status-indicator {
+    animation: pulse-soft 2s ease-in-out infinite !important;
+    background: var(--color-success) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.4) !important;
+    display: inline-block !important;
+    height: 10px !important;
+    margin-right: 8px !important;
+    width: 10px !important;
+}
+
+@keyframes pulse-soft {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(0.95);
+    }
+}
+
+/* ============================================
+   CARD COMPONENTS
+   ============================================ */
+
+.card {
+    background: white !important;
+    border: 1px solid var(--color-border-light) !important;
+    border-radius: var(--radius-card) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    transition: box-shadow var(--transition-standard) !important;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* ============================================
+   CONTROL GROUPS
+   ============================================ */
+
+.control-group {
+    margin-bottom: 20px !important;
+    padding: 16px !important;
+    background: var(--color-panel-bg-alt) !important;
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--color-border-light) !important;
+}
+
+.control-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 12px !important;
+}
+
+.control-row:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* ============================================
+   TOOLTIPS & HELPERS
+   ============================================ */
+
+[title] {
+    cursor: help !important;
+    border-bottom: 1px dotted var(--color-border) !important;
+}
+
+/* ============================================
+   SCROLLBARS - MODERN STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 10px !important;
+    height: 10px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-panel-bg) !important;
+    border-radius: 5px !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border) !important;
+    border-radius: 5px !important;
+    transition: background var(--transition-standard) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ocean-deep) !important;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 1024px) {
+    header h1 {
+        font-size: 22px !important;
+    }
+
+    button {
+        font-size: 13px !important;
+        padding: 9px 18px !important;
+    }
+
+    #playPauseButton {
+        font-size: 14px !important;
+        padding: 12px 28px !important;
+    }
+
+    #leftPanel,
+    #rightPanel {
+        padding: 16px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 18px !important;
+    }
+
+    header .subtitle {
+        font-size: 11px !important;
+    }
+
+    button {
+        font-size: 12px !important;
+        padding: 8px 16px !important;
+    }
+
+    #playPauseButton {
+        font-size: 13px !important;
+        padding: 10px 24px !important;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+    body {
+        background: white !important;
+    }
+
+    button,
+    input[type="range"] {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY ENHANCEMENTS
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus visible for keyboard navigation */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid var(--color-primary) !important;
+    outline-offset: 2px !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --color-border: #000000;
+        --color-border-light: #333333;
+    }
+}

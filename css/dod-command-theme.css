@@ -1,0 +1,448 @@
+/* ============================================
+   DoD COMMAND & CONTROL THEME
+   Department of Defense Weather Control Station
+   ============================================ */
+
+:root {
+    /* Military Command Center Color Palette */
+    --dod-dark-bg: #0a0f14;
+    --dod-panel-bg: #1a1f2e;
+    --dod-border: #2a3f4e;
+    --dod-accent: #00ff41;
+    --dod-tactical-green: #4a5f3a;
+    --dod-steel-blue: #4a5f6f;
+    --dod-amber-alert: #ffaa00;
+    --dod-red-alert: #ff2244;
+    --dod-grid-line: #1a3f2e;
+
+    /* Typography */
+    --dod-font-primary: 'Courier New', 'Consolas', monospace;
+    --dod-font-display: 'Impact', 'Haettenschweiler', sans-serif;
+}
+
+/* ============================================
+   GLOBAL OVERRIDES
+   ============================================ */
+
+body {
+    background: var(--dod-dark-bg) !important;
+    color: var(--dod-accent) !important;
+    font-family: var(--dod-font-primary) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
+
+#container {
+    background: var(--dod-dark-bg) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    position: relative !important;
+}
+
+/* ============================================
+   HEADER - COMMAND CENTER TITLE BAR
+   ============================================ */
+
+header {
+    background: linear-gradient(180deg, #1a2f3e 0%, #0a1f2e 100%) !important;
+    border-bottom: 3px solid var(--dod-accent) !important;
+    box-shadow: 0 4px 12px rgba(0, 255, 65, 0.3) !important;
+    padding: 12px 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+header h1 {
+    color: var(--dod-accent) !important;
+    font-family: var(--dod-font-display) !important;
+    font-size: 28px !important;
+    font-weight: 900 !important;
+    letter-spacing: 3px !important;
+    margin: 0 !important;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.8),
+                 0 0 20px rgba(0, 255, 65, 0.4) !important;
+    text-transform: uppercase !important;
+}
+
+header .subtitle {
+    color: #88ccaa !important;
+    font-family: var(--dod-font-primary) !important;
+    font-size: 11px !important;
+    letter-spacing: 2px !important;
+    margin-top: 2px !important;
+    text-transform: uppercase !important;
+}
+
+/* ============================================
+   CANVAS - TACTICAL DISPLAY
+   ============================================ */
+
+#gameCanvas {
+    border: 3px solid var(--dod-border) !important;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(0, 255, 65, 0.2) !important;
+    cursor: crosshair !important;
+    background-color: var(--dod-dark-bg) !important;
+}
+
+/* ============================================
+   CONTROL PANELS
+   ============================================ */
+
+#leftPanel,
+#rightPanel {
+    background: linear-gradient(180deg, #1a2f3e 0%, #0a1f2e 100%) !important;
+    border: 2px solid var(--dod-border) !important;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6),
+                0 4px 20px rgba(0, 0, 0, 0.8) !important;
+    padding: 15px !important;
+}
+
+#leftPanel {
+    border-right: 3px solid var(--dod-accent) !important;
+}
+
+#rightPanel {
+    border-left: 3px solid var(--dod-accent) !important;
+}
+
+/* ============================================
+   SECTION HEADERS
+   ============================================ */
+
+.control-section h3,
+.panel-header {
+    background: linear-gradient(90deg, var(--dod-tactical-green) 0%, transparent 100%) !important;
+    border-left: 4px solid var(--dod-accent) !important;
+    color: var(--dod-accent) !important;
+    font-family: var(--dod-font-display) !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    letter-spacing: 2px !important;
+    margin: 15px 0 10px 0 !important;
+    padding: 8px 12px !important;
+    text-shadow: 0 0 8px rgba(0, 255, 65, 0.6) !important;
+    text-transform: uppercase !important;
+}
+
+/* ============================================
+   3D TACTICAL BUTTONS - DoD STYLE
+   ============================================ */
+
+button {
+    background: linear-gradient(180deg, #3a4f5e 0%, #2a3f4e 50%, #1a2f3e 100%) !important;
+    border: 2px solid var(--dod-border) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 0 #0a1f2e,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: #88ccaa !important;
+    cursor: pointer !important;
+    font-family: var(--dod-font-primary) !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    letter-spacing: 1px !important;
+    padding: 10px 20px !important;
+    position: relative !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+    text-transform: uppercase !important;
+    transition: all 0.1s ease !important;
+}
+
+button:hover {
+    background: linear-gradient(180deg, #4a5f6e 0%, #3a4f5e 50%, #2a3f4e 100%) !important;
+    border-color: var(--dod-accent) !important;
+    box-shadow: 0 4px 0 #0a1f2e,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 255, 65, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: var(--dod-accent) !important;
+    transform: translateY(-2px) !important;
+}
+
+button:active {
+    background: linear-gradient(180deg, #1a2f3e 0%, #2a3f4e 50%, #3a4f5e 100%) !important;
+    box-shadow: 0 2px 0 #0a1f2e,
+                0 3px 6px rgba(0, 0, 0, 0.8),
+                inset 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+    transform: translateY(2px) !important;
+}
+
+/* ============================================
+   PLAY/PAUSE - TACTICAL GREEN
+   ============================================ */
+
+#playPauseButton {
+    background: linear-gradient(180deg, #5a7f4a 0%, #4a6f3a 50%, #3a5f2a 100%) !important;
+    border-color: var(--dod-tactical-green) !important;
+    box-shadow: 0 4px 0 #2a4f1a,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(74, 95, 58, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: #c0ffaa !important;
+    font-size: 16px !important;
+    padding: 14px 32px !important;
+}
+
+#playPauseButton:hover {
+    background: linear-gradient(180deg, #6a8f5a 0%, #5a7f4a 50%, #4a6f3a 100%) !important;
+    box-shadow: 0 4px 0 #2a4f1a,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(74, 95, 58, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: #d0ffcc !important;
+}
+
+/* ============================================
+   STEP - STEEL BLUE
+   ============================================ */
+
+#stepButton {
+    background: linear-gradient(180deg, #5a6f8f 0%, #4a5f7f 50%, #3a4f6f 100%) !important;
+    border-color: var(--dod-steel-blue) !important;
+    box-shadow: 0 4px 0 #2a3f5f,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(74, 95, 111, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: #aaccff !important;
+}
+
+#stepButton:hover {
+    background: linear-gradient(180deg, #6a7f9f 0%, #5a6f8f 50%, #4a5f7f 100%) !important;
+    box-shadow: 0 4px 0 #2a3f5f,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(74, 95, 111, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: #ccddff !important;
+}
+
+/* ============================================
+   RESET - AMBER ALERT
+   ============================================ */
+
+#resetButton {
+    background: linear-gradient(180deg, #ffbb22 0%, #ffaa00 50%, #ee9900 100%) !important;
+    border-color: var(--dod-amber-alert) !important;
+    box-shadow: 0 4px 0 #cc8800,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(255, 170, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: #1a1f2e !important;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+#resetButton:hover {
+    background: linear-gradient(180deg, #ffcc33 0%, #ffbb22 50%, #ffaa00 100%) !important;
+    box-shadow: 0 4px 0 #cc8800,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(255, 170, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ============================================
+   CLEAR STORMS - RED ALERT
+   ============================================ */
+
+#clearStormsButton {
+    background: linear-gradient(180deg, #ff3355 0%, #ff2244 50%, #ee1133 100%) !important;
+    border-color: var(--dod-red-alert) !important;
+    box-shadow: 0 4px 0 #aa0022,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(255, 34, 68, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: #ffccdd !important;
+}
+
+#clearStormsButton:hover {
+    background: linear-gradient(180deg, #ff4466 0%, #ff3355 50%, #ff2244 100%) !important;
+    box-shadow: 0 4px 0 #aa0022,
+                0 6px 12px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(255, 34, 68, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4) !important;
+    color: #ffddee !important;
+}
+
+/* ============================================
+   SLIDERS & INPUTS
+   ============================================ */
+
+input[type="range"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: linear-gradient(180deg, #0a1f2e 0%, #1a2f3e 100%) !important;
+    border: 2px solid var(--dod-border) !important;
+    border-radius: 8px !important;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8) !important;
+    height: 8px !important;
+    outline: none !important;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: linear-gradient(180deg, var(--dod-accent) 0%, #00cc33 100%) !important;
+    border: 2px solid #00aa22 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(0, 255, 65, 0.6),
+                0 0 12px rgba(0, 255, 65, 0.4) !important;
+    cursor: pointer !important;
+    height: 20px !important;
+    width: 20px !important;
+}
+
+input[type="range"]::-moz-range-thumb {
+    background: linear-gradient(180deg, var(--dod-accent) 0%, #00cc33 100%) !important;
+    border: 2px solid #00aa22 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(0, 255, 65, 0.6),
+                0 0 12px rgba(0, 255, 65, 0.4) !important;
+    cursor: pointer !important;
+    height: 20px !important;
+    width: 20px !important;
+}
+
+input[type="number"],
+select {
+    background: linear-gradient(180deg, #1a2f3e 0%, #0a1f2e 100%) !important;
+    border: 2px solid var(--dod-border) !important;
+    border-radius: 4px !important;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+    color: var(--dod-accent) !important;
+    font-family: var(--dod-font-primary) !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+}
+
+input[type="number"]:focus,
+select:focus {
+    border-color: var(--dod-accent) !important;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6),
+                0 0 12px rgba(0, 255, 65, 0.4) !important;
+    outline: none !important;
+}
+
+/* ============================================
+   LABELS & TEXT
+   ============================================ */
+
+label {
+    color: #88ccaa !important;
+    font-family: var(--dod-font-primary) !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+}
+
+.value-display {
+    color: var(--dod-accent) !important;
+    font-family: var(--dod-font-primary) !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    text-shadow: 0 0 8px rgba(0, 255, 65, 0.6) !important;
+}
+
+/* ============================================
+   STATUS INDICATORS
+   ============================================ */
+
+.status-indicator {
+    animation: pulse 2s ease-in-out infinite !important;
+    background: var(--dod-accent) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 10px var(--dod-accent),
+                0 0 20px var(--dod-accent) !important;
+    display: inline-block !important;
+    height: 10px !important;
+    margin-right: 8px !important;
+    width: 10px !important;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ============================================
+   GRID OVERLAY EFFECT
+   ============================================ */
+
+.grid-overlay::before {
+    background-image:
+        linear-gradient(0deg, transparent 24%, var(--dod-grid-line) 25%, var(--dod-grid-line) 26%, transparent 27%, transparent 74%, var(--dod-grid-line) 75%, var(--dod-grid-line) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, var(--dod-grid-line) 25%, var(--dod-grid-line) 26%, transparent 27%, transparent 74%, var(--dod-grid-line) 75%, var(--dod-grid-line) 76%, transparent 77%, transparent) !important;
+    background-size: 50px 50px !important;
+    content: '' !important;
+    height: 100% !important;
+    left: 0 !important;
+    opacity: 0.15 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    top: 0 !important;
+    width: 100% !important;
+    z-index: 1 !important;
+}
+
+/* ============================================
+   TACTICAL SCANLINES EFFECT
+   ============================================ */
+
+.scanlines::after {
+    animation: scanline 8s linear infinite !important;
+    background: linear-gradient(
+        transparent 0%,
+        rgba(0, 255, 65, 0.05) 50%,
+        transparent 100%
+    ) !important;
+    content: '' !important;
+    height: 100% !important;
+    left: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    top: 0 !important;
+    width: 100% !important;
+    z-index: 2 !important;
+}
+
+@keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+}
+
+/* ============================================
+   RESPONSIVE TWEAKS
+   ============================================ */
+
+@media (max-width: 1024px) {
+    header h1 {
+        font-size: 20px !important;
+    }
+
+    button {
+        font-size: 10px !important;
+        padding: 8px 16px !important;
+    }
+
+    #playPauseButton {
+        font-size: 13px !important;
+        padding: 10px 24px !important;
+    }
+}

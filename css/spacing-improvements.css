@@ -1,0 +1,81 @@
+/* Minimal spacing improvements - non-breaking */
+
+/* Add simple status bar at top */
+.app-header {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px 24px;
+    border-bottom: 1px solid #b0bec5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.app-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.app-subtitle {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.header-stats {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    color: #2c3e50;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #2196f3;
+}
+
+/* Better spacing in right panel */
+#rightPanel {
+    padding: 20px !important;
+}
+
+.control-section {
+    margin-bottom: 20px !important;
+}
+
+.control-section h3 {
+    margin-bottom: 12px !important;
+}
+
+/* Better button spacing */
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.button-group button {
+    flex: 1;
+    min-width: 100px;
+}
+
+/* Tab improvements */
+.tabs {
+    gap: 8px !important;
+}
+
+.tab-button {
+    padding: 10px 20px !important;
+}
